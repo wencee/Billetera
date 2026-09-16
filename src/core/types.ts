@@ -98,14 +98,23 @@ export interface Installment {
   paidAt?: ISODate
 }
 
+/**
+ * Pago de un resumen. 'total' marca todas las cuotas del período como pagadas
+ * sin importar el monto (el banco convierte el USD a su propia cotización).
+ */
+export type CardPaymentKind = 'total' | 'partial' | 'minimum'
+
 export interface CardPayment {
   id: string
   cardId: string
   period: Period
   amount: Cents
-  accountId: string
+  kind: CardPaymentKind
+  /** Cuenta de la que salió la plata (opcional hasta que existan cuentas). */
+  accountId?: string
   date: ISODate
-  isMinimum: boolean
+  note?: string
+  createdAt: string
 }
 
 // ---------- Cuentas y movimientos ----------

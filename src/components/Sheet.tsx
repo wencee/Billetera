@@ -55,7 +55,8 @@ function SheetPanel({ onClose, title, children }: Omit<SheetProps, 'open'>) {
     (velocity = 0) => {
       if (closingRef.current) return
       closingRef.current = true
-      if (reduced) {
+      // Con movimiento reducido, o si todavía está entrando (y en '100%'), alcanza con la animación de salida.
+      if (reduced || typeof y.get() !== 'number') {
         onClose()
         return
       }

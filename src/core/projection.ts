@@ -1,13 +1,10 @@
 import { addDays, addPeriods, comparePeriods, maxDate, periodsBetween } from './dates'
 import { splitEvenly } from './money'
 import { occurrencesBetween, type RecurrenceRule } from './recurring'
-import { closingDateFor, firstPeriodFor, type CardCycle, type Overrides } from './statements'
+import { closingDateFor, firstPeriodFor, type CardCycle, type CurrencyTotals, type Overrides } from './statements'
 import type { Cents, Currency, ISODate, Period } from './types'
 
-export interface CurrencyTotals {
-  ARS: Cents
-  USD: Cents
-}
+export type { CurrencyTotals }
 
 export interface CommitmentRow {
   period: Period

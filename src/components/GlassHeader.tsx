@@ -9,6 +9,8 @@ interface Props {
   showTitle: boolean
   /** Texto del botón de volver; si está, se muestra. */
   back?: string
+  /** Adónde ir si no hay historial (la app se abrió directo en esta pantalla). */
+  backTo?: string
   right?: ReactNode
 }
 
@@ -16,8 +18,14 @@ interface Props {
  * Barra superior translúcida. Cuando el contenido está arriba del todo es
  * transparente; al scrollear se materializa el vidrio (scroll edge effect).
  */
-export function GlassHeader({ title, showTitle, back, right }: Props) {
+export function GlassHeader({ title, showTitle, back, backTo = '/', right }: Props) {
   const navigate = useNavigate()
+  const goBack = () => {
+    // react-router guarda el índice de la entrada en history.state; 0 = primera pantalla de la sesión.
+    const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0
+    if (idx > 0) navigate(-1)
+    else navigate(backTo, { replace: true })
+  }
   return (
     <header
       className={`absolute inset-x-0 top-0 z-20 transition-[background-color,backdrop-filter] duration-200 ${showTitle ? 'glass' : ''}`}
@@ -28,7 +36,7 @@ export function GlassHeader({ title, showTitle, back, right }: Props) {
           <Pressable
             pressScale={0.95}
             className="absolute left-1 flex items-center pr-3 text-body text-tint"
-            onClick={() => navigate(-1)}
+            onClick={goBack}
             aria-label="Volver"
           >
             <ChevronLeft size={28} strokeWidth={2.2} className="-ml-1" />

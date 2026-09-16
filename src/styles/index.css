@@ -117,7 +117,8 @@
   --radius-sheet: 1.5rem;
 }
 
-/* ---------- Base ---------- */
+/* ---------- Base (en @layer base para que las utilidades de Tailwind ganen) ---------- */
+@layer base {
 html {
   /* Dynamic Type: en iOS la raíz sigue el tamaño de texto del sistema (17px por defecto). */
   font: -apple-system-body;
@@ -175,6 +176,7 @@ input, textarea, select {
 img, svg { display: block; }
 
 .tabular { font-variant-numeric: tabular-nums; }
+}
 
 /* ---------- Materiales ---------- */
 .glass {
@@ -203,7 +205,7 @@ img, svg { display: block; }
   overscroll-behavior-y: contain; /* elástico dentro de la lista, sin arrastrar la página */
   -webkit-overflow-scrolling: touch;
   padding-top: calc(var(--safe-top) + var(--header-h));
-  padding-bottom: calc(var(--safe-bottom) + var(--tabbar-h) + 1.5rem);
+  padding-bottom: calc(var(--safe-bottom) + var(--tabbar-h) + 5.5rem); /* deja lugar al botón + */
   padding-left: var(--safe-left);
   padding-right: var(--safe-right);
 }

@@ -1,9 +1,12 @@
-import { addDays, addMonths, dateParts, makeISODate, makePeriod, todayISO } from '@/core/dates'
+import { addDays, addMonths, addPeriods, comparePeriods, dateParts, makeISODate, makePeriod, todayISO } from '@/core/dates'
+import { closingDateFor, currentPeriod } from '@/core/statements'
 import type { Account, Card, Expense, Goal, GoalEntry, Income, Recurring } from '@/core/types'
 import { newId, nowISO } from '@/lib/id'
 import { DATA_TABLES, db } from './db'
 import { defaultCategoryId, ensureDefaults } from './seed'
+import { addCardPayment } from './repos/payments'
 import { createPurchase } from './repos/purchases'
+import { loadOverrides } from './repos/statements'
 import { setOverride } from './repos/statements'
 import { updateSettings } from './repos/settings'
 
@@ -27,7 +30,7 @@ export async function loadSampleData(): Promise<void> {
   }
   const master: Card = {
     id: newId(), name: 'Mastercard Santander', bank: 'Santander', network: 'mastercard', last4: '8810', color: '#b91c1c',
-    limit: 120000000, closingDay: 15, dueDay: 28, currencies: ['ARS'], archived: false, createdAt: created,
+    limit: 350000000, closingDay: 15, dueDay: 28, currencies: ['ARS'], archived: false, createdAt: created,
   }
   await db.cards.bulkAdd([visa, master])
   // Cierre corrido, como en el resumen real: el de este mes cierra el 1 del próximo.
@@ -67,6 +70,19 @@ export async function loadSampleData(): Promise<void> {
     date: addMonths(thisMonth(5), -4), currency: 'ARS', cashPrice: 120000000, installments: 18, financing: 'interest',
     interestInput: { mode: 'tna', value: 0.75 },
   })
+
+  // Resúmenes ya cerrados: pagados en su totalidad, salvo el último cerrado de cada tarjeta.
+  for (const card of [visa, master]) {
+    const overrides = await loadOverrides(card.id)
+    const lastClosed = addPeriods(currentPeriod(card, today, overrides), -1)
+    const periods = new Set((await db.installments.where('cardId').equals(card.id).toArray()).map((i) => i.period))
+    for (const period of periods) {
+      if (comparePeriods(period, lastClosed) >= 0) continue
+      const rows = await db.installments.where('[cardId+period]').equals([card.id, period]).toArray()
+      const amount = rows.filter((r) => r.currency === 'ARS').reduce((a, r) => a + r.amount, 0)
+      await addCardPayment({ cardId: card.id, period, amount, kind: 'total', accountId: bank.id, date: addDays(closingDateFor(card, period, overrides), 10) })
+    }
+  }
 
   const netflix: Recurring = {
     id: newId(), kind: 'expense', name: 'Netflix', amount: 999900, currency: 'ARS', categoryId: cat('Suscripciones'),

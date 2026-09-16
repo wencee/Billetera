@@ -45,7 +45,7 @@ npm run icons     # regenera los íconos a partir de public/logo.svg
    ```
 
 4. En el repo, en **Settings → Pages → Build and deployment → Source**, elegí **GitHub Actions**.
-5. Cada push a `main` corre los tests, hace el build y publica en `https://TU-USUARIO.github.io/billetera/`. El primer deploy tarda 1-2 minutos; lo ves en la pestaña **Actions**.
+5. Cada push a `main` corre los tests, hace el build y publica en `https://TU-USUARIO.github.io/billetera/` (la URL usa el nombre del repo tal cual, mayúsculas incluidas). El primer deploy tarda 1-2 minutos; lo ves en la pestaña **Actions**. El repo tiene que ser público: en el plan gratuito, Pages no funciona con repos privados.
 
 ## Instalarla en el iPhone
 
@@ -69,7 +69,7 @@ src/app         router, shell, instalación, aviso de actualización
 ## Estado del proyecto
 
 - [x] Fase 1 — Proyecto base, PWA instalable, navegación, base de datos, core con tests, deploy
-- [ ] Fase 2 — Tarjetas y compras en cuotas
+- [x] Fase 2 — Tarjetas y compras en cuotas (carrusel, intereses, resúmenes, pagos, fechas reales)
 - [ ] Fase 3 — Gastos, ingresos, cuentas, categorías, presupuestos, carga rápida
 - [ ] Fase 4 — Metas y ahorros
 - [ ] Fase 5 — Inicio, avisos y estadísticas

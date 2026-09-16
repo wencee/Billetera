@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router'
 import { Fab } from '@/components/Fab'
 import { TabBar } from '@/components/TabBar'
+import { ToastHost } from '@/components/Toast'
 import { QuickAddSheet } from '@/features/quick-add/QuickAddSheet'
 import { useUIStore } from './store'
 
@@ -14,6 +15,7 @@ export function AppShell() {
       <Outlet />
       <Fab onPress={openQuickAdd} />
       <TabBar />
+      <ToastHost />
       <QuickAddSheet open={quickAddOpen} onClose={closeQuickAdd} />
     </div>
   )

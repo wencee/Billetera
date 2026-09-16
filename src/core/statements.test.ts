@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  closingDateFor, currentPeriod, dueDateFor, firstPeriodFor, statementDates, statementStatus,
+  closingDateFor, currentPeriod, dueDateFor, firstPeriodFor, statementDates, statementStatus, summarizeStatement,
   type DateOverride, type Overrides,
 } from './statements'
 
@@ -86,17 +86,48 @@ describe('estado de pago del resumen', () => {
     expect(statementStatus(10000, [])).toEqual({ status: 'unpaid', paid: 0, remaining: 10000 })
   })
   it('pago total (o de más)', () => {
-    expect(statementStatus(10000, [{ amount: 10000, isMinimum: false }]).status).toBe('paid')
-    expect(statementStatus(10000, [{ amount: 12000, isMinimum: false }]).remaining).toBe(0)
+    expect(statementStatus(10000, [{ amount: 10000, kind: 'partial' }]).status).toBe('paid')
+    expect(statementStatus(10000, [{ amount: 12000, kind: 'partial' }]).remaining).toBe(0)
+    // Un pago 'total' con monto distinto (USD convertido por el banco) igual deja el resumen pago
+    expect(statementStatus(10000, [{ amount: 9000, kind: 'total' }])).toEqual({ status: 'paid', paid: 9000, remaining: 0 })
   })
   it('parcial y mínimo', () => {
-    expect(statementStatus(10000, [{ amount: 4000, isMinimum: false }])).toEqual({ status: 'partial', paid: 4000, remaining: 6000 })
-    expect(statementStatus(10000, [{ amount: 1500, isMinimum: true }]).status).toBe('minimum')
+    expect(statementStatus(10000, [{ amount: 4000, kind: 'partial' }])).toEqual({ status: 'partial', paid: 4000, remaining: 6000 })
+    expect(statementStatus(10000, [{ amount: 1500, kind: 'minimum' }]).status).toBe('minimum')
   })
   it('varios pagos se suman', () => {
-    expect(statementStatus(10000, [{ amount: 4000, isMinimum: false }, { amount: 6000, isMinimum: false }]).status).toBe('paid')
+    expect(statementStatus(10000, [{ amount: 4000, kind: 'partial' }, { amount: 6000, kind: 'partial' }]).status).toBe('paid')
   })
   it('resumen en cero está pago', () => {
     expect(statementStatus(0, []).status).toBe('paid')
+  })
+})
+
+describe('summarizeStatement', () => {
+  const inst = [
+    { period: '2026-09', amount: 1000, currency: 'ARS' as const },
+    { period: '2026-09', amount: 50, currency: 'USD' as const },
+    { period: '2026-10', amount: 700, currency: 'ARS' as const },
+  ]
+  it('totales por moneda, fechas y cerrado/abierto', () => {
+    const s = summarizeStatement({ card, period: '2026-09', installments: inst, payments: [], today: '2026-10-05' })
+    expect(s.totals).toEqual({ ARS: 1000, USD: 50 })
+    expect(s.count).toBe(2)
+    expect(s.closed).toBe(true)
+    expect(s.closingDate).toBe('2026-09-28')
+    expect(s.payment.status).toBe('unpaid')
+    expect(summarizeStatement({ card, period: '2026-10', installments: inst, payments: [], today: '2026-10-05' }).closed).toBe(false)
+  })
+  it('convierte USD para comparar con los pagos', () => {
+    const s = summarizeStatement({
+      card, period: '2026-09', installments: inst, today: '2026-10-05', usdRate: 100000,
+      payments: [{ period: '2026-09', amount: 51000, kind: 'partial' }],
+    })
+    // 1000 ARS + 50 USD × $1.000 = 51.000 → pagado
+    expect(s.payment.status).toBe('paid')
+  })
+  it('sin cotización, el USD no entra en la comparación', () => {
+    const s = summarizeStatement({ card, period: '2026-09', installments: inst, today: '2026-10-05', payments: [{ period: '2026-09', amount: 1000, kind: 'partial' }] })
+    expect(s.payment.status).toBe('paid')
   })
 })

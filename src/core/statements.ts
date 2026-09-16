@@ -76,21 +76,71 @@ export interface PaymentSummary {
   remaining: Cents
 }
 
-/** Estado de pago derivado de los pagos registrados contra el total del resumen. */
+/**
+ * Estado de pago derivado de los pagos registrados contra el total en ARS del
+ * resumen. Un pago de tipo 'total' lo deja pago aunque el monto no coincida.
+ */
 export function statementStatus(
   total: Cents,
-  payments: readonly { amount: Cents; isMinimum: boolean }[],
+  payments: readonly { amount: Cents; kind: 'total' | 'partial' | 'minimum' }[],
 ): PaymentSummary {
   let paid = 0
   let anyMinimum = false
+  let anyTotal = false
   for (const p of payments) {
     paid += p.amount
-    if (p.isMinimum) anyMinimum = true
+    if (p.kind === 'minimum') anyMinimum = true
+    if (p.kind === 'total') anyTotal = true
   }
-  const remaining = Math.max(0, total - paid)
+  const remaining = anyTotal ? 0 : Math.max(0, total - paid)
   let status: StatementStatus
-  if (total <= 0 || paid >= total) status = 'paid'
+  if (anyTotal || total <= 0 || paid >= total) status = 'paid'
   else if (paid <= 0) status = 'unpaid'
   else status = anyMinimum ? 'minimum' : 'partial'
   return { status, paid, remaining }
+}
+
+export interface CurrencyTotals {
+  ARS: Cents
+  USD: Cents
+}
+
+/** Suma montos por moneda. */
+export function sumByCurrency(items: Iterable<{ amount: Cents; currency: 'ARS' | 'USD' }>): CurrencyTotals {
+  const t: CurrencyTotals = { ARS: 0, USD: 0 }
+  for (const i of items) t[i.currency] += i.amount
+  return t
+}
+
+export interface StatementSummary extends StatementDates {
+  totals: CurrencyTotals
+  /** Cantidad de cuotas que caen en el período. */
+  count: number
+  /** true si la fecha de cierre ya pasó. */
+  closed: boolean
+  /** Estado de pago; para resúmenes abiertos siempre 'unpaid' salvo que haya pagos. */
+  payment: PaymentSummary
+}
+
+/**
+ * Resumen de un período: fechas, totales por moneda y estado de pago.
+ * El estado compara los pagos contra el total en ARS más el USD convertido
+ * (si hay cotización); un pago 'total' lo deja pago de todos modos.
+ */
+export function summarizeStatement(params: {
+  card: CardCycle
+  period: Period
+  installments: readonly { period: Period; amount: Cents; currency: 'ARS' | 'USD' }[]
+  payments: readonly { period: Period; amount: Cents; kind: 'total' | 'partial' | 'minimum' }[]
+  today: ISODate
+  overrides?: Overrides
+  usdRate?: Cents
+}): StatementSummary {
+  const { card, period, installments, payments, today, overrides, usdRate } = params
+  const dates = statementDates(card, period, overrides)
+  const inPeriod = installments.filter((i) => i.period === period)
+  const totals = sumByCurrency(inPeriod)
+  const usdInArs = usdRate && usdRate > 0 ? Math.round((totals.USD * usdRate) / 100) : 0
+  const payment = statementStatus(totals.ARS + usdInArs, payments.filter((p) => p.period === period))
+  return { ...dates, totals, count: inPeriod.length, closed: dates.closingDate < today, payment }
 }

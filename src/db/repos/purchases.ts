@@ -1,31 +1,21 @@
 import { buildSchedule } from '@/core/installments'
 import { analyzeFinancing } from '@/core/interest'
+import type { PurchaseInput } from '@/core/schemas'
 import { firstPeriodFor } from '@/core/statements'
-import type { Cents, Currency, Financing, InterestInput, ISODate, Period, Purchase, Installment } from '@/core/types'
+import type { Card, Installment, Purchase } from '@/core/types'
 import { newId, nowISO } from '@/lib/id'
 import { db } from '../db'
 import { loadOverrides } from './statements'
 
-export interface NewPurchase {
-  cardId: string
-  description: string
-  merchant?: string
-  categoryId: string
-  date: ISODate
-  currency: Currency
-  cashPrice: Cents
-  installments: number
-  financing: Financing
-  interestInput?: InterestInput
-  /** Si se quiere corregir a mano el resumen de la cuota 1. */
-  firstPeriod?: Period
-  notes?: string
-  recurringId?: string
+export type NewPurchase = PurchaseInput & { recurringId?: string }
+
+interface Built {
+  purchase: Purchase
+  installments: Installment[]
 }
 
-/** Guarda la compra y genera su cronograma de cuotas en una sola transacción. */
-export async function createPurchase(input: NewPurchase): Promise<Purchase> {
-  const card = await db.cards.get(input.cardId)
+async function buildPurchase(input: NewPurchase, existing?: Purchase, previous: readonly Installment[] = []): Promise<Built> {
+  const card: Card | undefined = await db.cards.get(input.cardId)
   if (!card) throw new Error('Tarjeta inexistente')
   const overrides = await loadOverrides(card.id)
 
@@ -39,7 +29,7 @@ export async function createPurchase(input: NewPurchase): Promise<Purchase> {
   const schedule = buildSchedule({ amounts: analysis.installments, firstPeriod, card, overrides })
 
   const purchase: Purchase = {
-    id: newId(),
+    id: existing?.id ?? newId(),
     cardId: card.id,
     description: input.description,
     categoryId: input.categoryId,
@@ -51,35 +41,77 @@ export async function createPurchase(input: NewPurchase): Promise<Purchase> {
     installmentAmount: analysis.installmentAmount,
     totalAmount: analysis.totalAmount,
     firstPeriod,
-    createdAt: nowISO(),
+    createdAt: existing?.createdAt ?? nowISO(),
     ...(input.merchant ? { merchant: input.merchant } : {}),
     ...(input.interestInput ? { interestInput: input.interestInput } : {}),
     ...(input.notes ? { notes: input.notes } : {}),
     ...(input.recurringId ? { recurringId: input.recurringId } : {}),
   }
-  const rows: Installment[] = schedule.map((s) => ({
-    id: newId(),
-    purchaseId: purchase.id,
-    cardId: card.id,
-    number: s.number,
-    count: s.count,
-    amount: s.amount,
-    currency: input.currency,
-    period: s.period,
-    dueDate: s.dueDate,
-    status: 'pending',
-  }))
+  // Al editar, las cuotas ya pagadas conservan su estado por número.
+  const paidByNumber = new Map(previous.filter((i) => i.status === 'paid').map((i) => [i.number, i.paidAt]))
+  const installments: Installment[] = schedule.map((s) => {
+    const paidAt = paidByNumber.get(s.number)
+    return {
+      id: newId(),
+      purchaseId: purchase.id,
+      cardId: card.id,
+      number: s.number,
+      count: s.count,
+      amount: s.amount,
+      currency: input.currency,
+      period: s.period,
+      dueDate: s.dueDate,
+      status: paidByNumber.has(s.number) ? 'paid' : 'pending',
+      ...(paidAt ? { paidAt } : {}),
+    }
+  })
+  return { purchase, installments }
+}
 
+/** Guarda la compra y genera su cronograma de cuotas en una sola transacción. */
+export async function createPurchase(input: NewPurchase): Promise<Purchase> {
+  const { purchase, installments } = await buildPurchase(input)
   await db.transaction('rw', db.purchases, db.installments, async () => {
     await db.purchases.add(purchase)
-    await db.installments.bulkAdd(rows)
+    await db.installments.bulkAdd(installments)
   })
   return purchase
 }
 
-export async function deletePurchase(purchaseId: string): Promise<void> {
+/** Reemplaza la compra y regenera las cuotas (las pagadas siguen pagadas). */
+export async function updatePurchase(id: string, input: NewPurchase): Promise<Purchase> {
+  const existing = await db.purchases.get(id)
+  if (!existing) throw new Error('Compra inexistente')
+  const previous = await db.installments.where('purchaseId').equals(id).toArray()
+  const { purchase, installments } = await buildPurchase(input, existing, previous)
   await db.transaction('rw', db.purchases, db.installments, async () => {
+    await db.installments.where('purchaseId').equals(id).delete()
+    await db.purchases.put(purchase)
+    await db.installments.bulkAdd(installments)
+  })
+  return purchase
+}
+
+export interface PurchaseSnapshot {
+  purchase: Purchase
+  installments: Installment[]
+}
+
+/** Borra y devuelve una copia para poder deshacer. */
+export async function deletePurchase(purchaseId: string): Promise<PurchaseSnapshot | null> {
+  return db.transaction('rw', db.purchases, db.installments, async () => {
+    const purchase = await db.purchases.get(purchaseId)
+    if (!purchase) return null
+    const installments = await db.installments.where('purchaseId').equals(purchaseId).toArray()
     await db.installments.where('purchaseId').equals(purchaseId).delete()
     await db.purchases.delete(purchaseId)
+    return { purchase, installments }
+  })
+}
+
+export async function restorePurchase(snapshot: PurchaseSnapshot): Promise<void> {
+  await db.transaction('rw', db.purchases, db.installments, async () => {
+    await db.purchases.put(snapshot.purchase)
+    await db.installments.bulkPut(snapshot.installments)
   })
 }
