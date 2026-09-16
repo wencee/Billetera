@@ -1,0 +1,244 @@
+@import "tailwindcss";
+
+/* ---------- Tokens (paleta del sistema iOS, claro y oscuro) ---------- */
+:root {
+  color-scheme: light dark;
+  --ios-bg: #f2f2f7;
+  --ios-surface: #ffffff;
+  --ios-surface-2: #f2f2f7;
+  --ios-label: #000000;
+  --ios-label-2: rgba(60, 60, 67, 0.6);
+  --ios-label-3: rgba(60, 60, 67, 0.3);
+  --ios-separator: rgba(60, 60, 67, 0.29);
+  --ios-fill: rgba(120, 120, 128, 0.2);
+  --ios-fill-2: rgba(120, 120, 128, 0.16);
+  --ios-tint: #007aff;
+  --ios-green: #34c759;
+  --ios-red: #ff3b30;
+  --ios-orange: #ff9500;
+  --ios-yellow: #ffcc00;
+  --ios-purple: #af52de;
+  --ios-indigo: #5856d6;
+  --ios-teal: #30b0c7;
+  --ios-pink: #ff2d55;
+  --glass-bg: rgba(249, 249, 249, 0.72);
+  --glass-edge: rgba(255, 255, 255, 0.6);
+  --header-h: 44px;
+  --tabbar-h: 49px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ios-bg: #000000;
+    --ios-surface: #1c1c1e;
+    --ios-surface-2: #2c2c2e;
+    --ios-label: #ffffff;
+    --ios-label-2: rgba(235, 235, 245, 0.6);
+    --ios-label-3: rgba(235, 235, 245, 0.3);
+    --ios-separator: rgba(84, 84, 88, 0.65);
+    --ios-fill: rgba(120, 120, 128, 0.36);
+    --ios-fill-2: rgba(120, 120, 128, 0.32);
+    --ios-tint: #0a84ff;
+    --ios-green: #30d158;
+    --ios-red: #ff453a;
+    --ios-orange: #ff9f0a;
+    --ios-yellow: #ffd60a;
+    --ios-purple: #bf5af2;
+    --ios-indigo: #5e5ce6;
+    --ios-teal: #40c8e0;
+    --ios-pink: #ff375f;
+    --glass-bg: rgba(29, 29, 31, 0.72);
+    --glass-edge: rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* Tailwind: utilidades a partir de los tokens (bg-bg, text-label-2, text-title1, …) */
+@theme inline {
+  --color-bg: var(--ios-bg);
+  --color-surface: var(--ios-surface);
+  --color-surface-2: var(--ios-surface-2);
+  --color-label: var(--ios-label);
+  --color-label-2: var(--ios-label-2);
+  --color-label-3: var(--ios-label-3);
+  --color-separator: var(--ios-separator);
+  --color-fill: var(--ios-fill);
+  --color-fill-2: var(--ios-fill-2);
+  --color-tint: var(--ios-tint);
+  --color-green: var(--ios-green);
+  --color-red: var(--ios-red);
+  --color-orange: var(--ios-orange);
+  --color-yellow: var(--ios-yellow);
+  --color-purple: var(--ios-purple);
+  --color-indigo: var(--ios-indigo);
+  --color-teal: var(--ios-teal);
+  --color-pink: var(--ios-pink);
+
+  --font-sans: system-ui, -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* Escala tipográfica de iOS en rem (raíz = 17px, sigue el tamaño de texto del sistema) */
+  --text-largetitle: 2rem;
+  --text-largetitle--line-height: 1.2;
+  --text-largetitle--letter-spacing: -0.02em;
+  --text-largetitle--font-weight: 700;
+  --text-title1: 1.647rem;
+  --text-title1--line-height: 1.21;
+  --text-title1--letter-spacing: -0.015em;
+  --text-title1--font-weight: 700;
+  --text-title2: 1.294rem;
+  --text-title2--line-height: 1.27;
+  --text-title2--letter-spacing: -0.01em;
+  --text-title2--font-weight: 700;
+  --text-title3: 1.176rem;
+  --text-title3--line-height: 1.25;
+  --text-title3--letter-spacing: -0.005em;
+  --text-title3--font-weight: 600;
+  --text-headline: 1rem;
+  --text-headline--line-height: 1.29;
+  --text-headline--font-weight: 600;
+  --text-body: 1rem;
+  --text-body--line-height: 1.29;
+  --text-callout: 0.941rem;
+  --text-callout--line-height: 1.31;
+  --text-subhead: 0.882rem;
+  --text-subhead--line-height: 1.33;
+  --text-footnote: 0.765rem;
+  --text-footnote--line-height: 1.38;
+  --text-caption1: 0.706rem;
+  --text-caption1--line-height: 1.33;
+  --text-caption2: 0.647rem;
+  --text-caption2--line-height: 1.27;
+  --text-caption2--letter-spacing: 0.01em;
+
+  --radius-card: 1rem;
+  --radius-sheet: 1.5rem;
+}
+
+/* ---------- Base ---------- */
+html {
+  /* Dynamic Type: en iOS la raíz sigue el tamaño de texto del sistema (17px por defecto). */
+  font: -apple-system-body;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+@supports not (font: -apple-system-body) {
+  html { font-size: 17px; }
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  /* La página nunca scrollea ni rebota: cada pantalla tiene su propio contenedor. */
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-label);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+button, [role="button"], a, label, summary {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+/* Inputs ≥ 16px evitan el zoom automático de Safari al enfocar. */
+input, textarea, select {
+  font: inherit;
+  font-size: max(1rem, 16px);
+  color: inherit;
+}
+
+img, svg { display: block; }
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* ---------- Materiales ---------- */
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+}
+.glass-edge-top { box-shadow: inset 0 1px 0 var(--glass-edge); }
+.glass-edge-bottom { box-shadow: inset 0 -1px 0 var(--glass-edge); }
+
+.hairline { height: 1px; background: var(--color-separator); transform: scaleY(0.5); transform-origin: bottom; }
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass { background: var(--color-surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@media (prefers-contrast: more) {
+  .glass { background: var(--color-surface); border-color: var(--color-label); }
+}
+
+/* ---------- Layout de pantalla ---------- */
+.screen-scroll {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain; /* elástico dentro de la lista, sin arrastrar la página */
+  -webkit-overflow-scrolling: touch;
+  padding-top: calc(var(--safe-top) + var(--header-h));
+  padding-bottom: calc(var(--safe-bottom) + var(--tabbar-h) + 1.5rem);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+}
+
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+}
+
+/* ---------- Hoja modal ---------- */
+.sheet {
+  background: var(--color-surface);
+  border-top-left-radius: var(--radius-sheet);
+  border-top-right-radius: var(--radius-sheet);
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18);
+  padding-bottom: var(--safe-bottom);
+  max-height: calc(100% - var(--safe-top) - 12px);
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+.sheet-handle {
+  touch-action: none; /* el agarre siempre arrastra la hoja */
+}
+.sheet-content {
+  overflow-y: auto;
+  overscroll-behavior-y: none; /* al tope, el arrastre hacia abajo mueve la hoja, no rebota */
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+}
+
+/* ---------- Movimiento reducido ----------
+   Los resortes y deslizamientos se reemplazan por fundidos en los componentes
+   (Motion: reducedMotion="user" + useReducedMotion). Acá solo se apagan
+   transiciones CSS de transform. */
+@media (prefers-reduced-motion: reduce) {
+  .motion-transform { transition-property: opacity !important; }
+}
