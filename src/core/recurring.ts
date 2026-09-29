@@ -49,6 +49,29 @@ export function occurrencesBetween(rule: RecurrenceRule, from: ISODate, to: ISOD
   return out
 }
 
+/** Tope de seguridad: una regla nunca genera más que esto de una sola vez. */
+export const MAX_GENERATED_AT_ONCE = 400
+
+/**
+ * Ocurrencias que todavía no se generaron y ya correspondían: desde el día
+ * siguiente a `lastGeneratedUntil` (o desde el inicio) hasta `today` inclusive.
+ * Es idempotente: después de generar, `lastGeneratedUntil` pasa a ser `today`.
+ */
+export function dueOccurrences(rule: RecurrenceRule & { lastGeneratedUntil?: ISODate | undefined }, today: ISODate): ISODate[] {
+  const from = rule.lastGeneratedUntil ? addDays(rule.lastGeneratedUntil, 1) : rule.startDate
+  if (from > today) return []
+  return occurrencesBetween(rule, from, today).slice(0, MAX_GENERATED_AT_ONCE)
+}
+
+/** Equivalente mensual para comparar reglas de distinta frecuencia (semanal × 52 / 12, anual / 12). */
+export function monthlyEquivalent(amount: number, frequency: Frequency): number {
+  switch (frequency) {
+    case 'monthly': return amount
+    case 'weekly': return Math.round((amount * 52) / 12)
+    case 'yearly': return Math.round(amount / 12)
+  }
+}
+
 /** Próxima ocurrencia estrictamente posterior a `after`, o null si la regla terminó. */
 export function nextOccurrence(rule: RecurrenceRule, after: ISODate): ISODate | null {
   const from = addDays(after, 1)

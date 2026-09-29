@@ -70,7 +70,7 @@ src/app         router, shell, instalación, aviso de actualización
 
 - [x] Fase 1 — Proyecto base, PWA instalable, navegación, base de datos, core con tests, deploy
 - [x] Fase 2 — Tarjetas y compras en cuotas (carrusel, intereses, resúmenes, pagos, fechas reales)
-- [ ] Fase 3 — Gastos, ingresos, cuentas, categorías, presupuestos, carga rápida
+- [x] Fase 3 — Gastos, ingresos, transferencias, cuentas, categorías, fijos y suscripciones, presupuestos, Movimientos y carga rápida
 - [ ] Fase 4 — Metas y ahorros
 - [ ] Fase 5 — Inicio, avisos y estadísticas
 - [ ] Fase 6 — Backups, PIN, modo privado

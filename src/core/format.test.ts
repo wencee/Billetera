@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { NBSP, formatDate, formatDateShort, formatMoney, formatPct, formatPeriod, formatPeriodLong } from './format'
+import { NBSP, formatDate, formatDateShort, formatDayHeader, formatMoney, formatPct, formatPeriod, formatPeriodLong } from './format'
+
+describe('formatDayHeader', () => {
+  it('hoy, ayer, mañana y fechas largas', () => {
+    expect(formatDayHeader('2026-09-28', '2026-09-28')).toBe('Hoy')
+    expect(formatDayHeader('2026-09-27', '2026-09-28')).toBe('Ayer')
+    expect(formatDayHeader('2026-09-30', '2026-10-01')).toBe('Ayer')
+    expect(formatDayHeader('2026-09-29', '2026-09-28')).toBe('Mañana')
+    expect(formatDayHeader('2026-09-26', '2026-09-28')).toBe('Sábado 26 de septiembre')
+    expect(formatDayHeader('2025-12-31', '2026-09-28')).toBe('Miércoles 31 de diciembre de 2025')
+  })
+})
 
 const plain = (s: string) => s.split(NBSP).join(' ')
 

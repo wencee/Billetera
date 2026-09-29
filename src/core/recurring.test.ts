@@ -1,5 +1,31 @@
 import { describe, expect, it } from 'vitest'
-import { nextOccurrence, occurrencesBetween } from './recurring'
+import { dueOccurrences, monthlyEquivalent, nextOccurrence, occurrencesBetween } from './recurring'
+
+describe('monthlyEquivalent', () => {
+  it('semanal, mensual y anual', () => {
+    expect(monthlyEquivalent(1200, 'monthly')).toBe(1200)
+    expect(monthlyEquivalent(1200, 'weekly')).toBe(5200)
+    expect(monthlyEquivalent(1200, 'yearly')).toBe(100)
+  })
+})
+
+describe('dueOccurrences', () => {
+  const rule = { frequency: 'monthly' as const, day: 10, startDate: '2026-06-01' }
+  it('sin generar nunca: desde el inicio hasta hoy', () => {
+    expect(dueOccurrences(rule, '2026-09-28')).toEqual(['2026-06-10', '2026-07-10', '2026-08-10', '2026-09-10'])
+  })
+  it('después de generar solo trae lo nuevo', () => {
+    expect(dueOccurrences({ ...rule, lastGeneratedUntil: '2026-09-10' }, '2026-09-28')).toEqual([])
+    expect(dueOccurrences({ ...rule, lastGeneratedUntil: '2026-09-28' }, '2026-10-10')).toEqual(['2026-10-10'])
+  })
+  it('incluye el día de hoy y respeta el fin', () => {
+    expect(dueOccurrences({ ...rule, lastGeneratedUntil: '2026-10-09' }, '2026-10-10')).toEqual(['2026-10-10'])
+    expect(dueOccurrences({ ...rule, endDate: '2026-07-31' }, '2026-09-28')).toEqual(['2026-06-10', '2026-07-10'])
+  })
+  it('inicio en el futuro no genera nada', () => {
+    expect(dueOccurrences({ ...rule, startDate: '2026-12-01' }, '2026-09-28')).toEqual([])
+  })
+})
 
 describe('occurrencesBetween', () => {
   it('mensual el 31 se recorta en meses cortos', () => {

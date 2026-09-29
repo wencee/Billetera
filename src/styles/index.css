@@ -23,6 +23,7 @@
   --ios-pink: #ff2d55;
   --glass-bg: rgba(249, 249, 249, 0.72);
   --glass-edge: rgba(255, 255, 255, 0.6);
+  --ios-segment: #ffffff;
   --header-h: 44px;
   --tabbar-h: 49px;
   --safe-top: env(safe-area-inset-top, 0px);
@@ -53,6 +54,7 @@
     --ios-pink: #ff375f;
     --glass-bg: rgba(29, 29, 31, 0.72);
     --glass-edge: rgba(255, 255, 255, 0.12);
+    --ios-segment: #636366;
   }
 }
 
@@ -76,6 +78,7 @@
   --color-indigo: var(--ios-indigo);
   --color-teal: var(--ios-teal);
   --color-pink: var(--ios-pink);
+  --color-segment: var(--ios-segment);
 
   --font-sans: system-ui, -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
 
@@ -213,6 +216,10 @@ img, svg { display: block; }
 .card {
   background: var(--color-surface);
   border-radius: var(--radius-card);
+}
+/* Dentro de una hoja (que ya es "surface"), las celdas van un nivel más arriba para distinguirse. */
+.sheet .card {
+  background: var(--color-surface-2);
 }
 
 /* ---------- Hoja modal ---------- */

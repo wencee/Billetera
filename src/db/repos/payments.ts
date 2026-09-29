@@ -41,3 +41,11 @@ export async function deleteCardPayment(id: string): Promise<void> {
     }
   })
 }
+
+/** Vuelve a poner un pago borrado (para "Deshacer"), con el mismo id. */
+export async function restoreCardPayment(payment: CardPayment): Promise<void> {
+  await db.transaction('rw', db.cardPayments, db.installments, async () => {
+    await db.cardPayments.put(payment)
+    if (payment.kind === 'total') await setStatementInstallmentsStatus(payment.cardId, payment.period, 'paid')
+  })
+}

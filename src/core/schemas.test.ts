@@ -1,5 +1,34 @@
 import { describe, expect, it } from 'vitest'
-import { cardInputSchema, fieldErrors, purchaseInputSchema, statementOverrideInputSchema } from './schemas'
+import { cardInputSchema, fieldErrors, purchaseInputSchema, recurringInputSchema, statementOverrideInputSchema, transferInputSchema } from './schemas'
+
+describe('transferInputSchema', () => {
+  const t = { fromAccountId: 'a', fromAmount: 100, toAccountId: 'b', toAmount: 100, date: '2026-09-28' }
+  it('exige cuentas distintas', () => {
+    expect(transferInputSchema.safeParse(t).success).toBe(true)
+    const r = transferInputSchema.safeParse({ ...t, toAccountId: 'a' })
+    expect(r.success).toBe(false)
+    if (!r.success) expect(fieldErrors(r.error).toAccountId).toBe('Elegí dos cuentas distintas')
+  })
+})
+
+describe('recurringInputSchema', () => {
+  const base = { kind: 'expense', name: 'Netflix', amount: 999900, currency: 'ARS', categoryId: 'subs', frequency: 'monthly', day: 10, method: 'card', cardId: 'visa', active: true, startDate: '2026-09-28' }
+  it('con tarjeta exige tarjeta; si no, cuenta', () => {
+    expect(recurringInputSchema.safeParse(base).success).toBe(true)
+    expect(recurringInputSchema.safeParse({ ...base, cardId: undefined }).success).toBe(false)
+    expect(recurringInputSchema.safeParse({ ...base, method: 'debit', cardId: undefined }).success).toBe(false)
+    expect(recurringInputSchema.safeParse({ ...base, method: 'debit', cardId: undefined, accountId: 'bank' }).success).toBe(true)
+  })
+  it('día según frecuencia', () => {
+    expect(recurringInputSchema.safeParse({ ...base, day: 32 }).success).toBe(false)
+    expect(recurringInputSchema.safeParse({ ...base, frequency: 'weekly', day: 6 }).success).toBe(true)
+    expect(recurringInputSchema.safeParse({ ...base, frequency: 'weekly', day: 7 }).success).toBe(false)
+  })
+  it('un ingreso no puede ir a tarjeta y no necesita categoría', () => {
+    expect(recurringInputSchema.safeParse({ ...base, kind: 'income', categoryId: undefined }).success).toBe(false)
+    expect(recurringInputSchema.safeParse({ ...base, kind: 'income', categoryId: undefined, method: 'transfer', cardId: undefined, accountId: 'bank' }).success).toBe(true)
+  })
+})
 
 const validCard = {
   name: 'Visa', bank: 'Galicia', network: 'visa', last4: '4321', color: '#1d4ed8',

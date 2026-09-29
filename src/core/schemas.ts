@@ -72,6 +72,92 @@ export const statementOverrideInputSchema = z
     path: ['dueDate'],
   })
 
+const nameSchema = (max: number) => z.string().trim().min(1, 'Poné un nombre').max(max, `Máximo ${max} caracteres`)
+const noteSchema = z.string().trim().max(200, 'Máximo 200 caracteres').optional()
+
+export const accountInputSchema = z.object({
+  name: nameSchema(40),
+  type: z.enum(['cash', 'bank', 'wallet']),
+  currency: currencySchema,
+  initialBalance: centsSchema,
+})
+export type AccountInput = z.infer<typeof accountInputSchema>
+
+export const categoryInputSchema = z.object({
+  name: nameSchema(30),
+  icon: z.string().trim().min(1, 'Elegí un ícono').max(16),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Color inválido'),
+  kind: z.enum(['expense', 'income']),
+})
+export type CategoryInput = z.infer<typeof categoryInputSchema>
+
+export const expenseInputSchema = z.object({
+  amount: positiveCentsSchema,
+  currency: currencySchema,
+  categoryId: z.string().min(1, 'Elegí una categoría'),
+  date: isoDateSchema,
+  method: z.enum(['cash', 'debit', 'transfer', 'wallet']),
+  accountId: z.string().min(1, 'Elegí una cuenta'),
+  note: noteSchema,
+})
+export type ExpenseInput = z.infer<typeof expenseInputSchema>
+
+export const incomeInputSchema = z.object({
+  amount: positiveCentsSchema,
+  currency: currencySchema,
+  date: isoDateSchema,
+  source: z.string().trim().min(1, 'Poné de dónde viene').max(40),
+  accountId: z.string().min(1, 'Elegí una cuenta'),
+  note: noteSchema,
+})
+export type IncomeInput = z.infer<typeof incomeInputSchema>
+
+export const transferInputSchema = z
+  .object({
+    fromAccountId: z.string().min(1, 'Elegí la cuenta de origen'),
+    fromAmount: positiveCentsSchema,
+    toAccountId: z.string().min(1, 'Elegí la cuenta de destino'),
+    toAmount: positiveCentsSchema,
+    date: isoDateSchema,
+    note: noteSchema,
+  })
+  .refine((t) => t.fromAccountId !== t.toAccountId, { message: 'Elegí dos cuentas distintas', path: ['toAccountId'] })
+export type TransferInput = z.infer<typeof transferInputSchema>
+
+export const recurringInputSchema = z
+  .object({
+    kind: z.enum(['expense', 'income']),
+    name: nameSchema(40),
+    amount: positiveCentsSchema,
+    currency: currencySchema,
+    categoryId: z.string().min(1).optional(),
+    frequency: z.enum(['weekly', 'monthly', 'yearly']),
+    day: z.number().int(),
+    method: z.enum(['cash', 'debit', 'transfer', 'wallet', 'card']),
+    accountId: z.string().min(1).optional(),
+    cardId: z.string().min(1).optional(),
+    installments: z.number().int().min(1).max(120).optional(),
+    active: z.boolean(),
+    startDate: isoDateSchema,
+    endDate: isoDateSchema.optional(),
+  })
+  .refine((r) => (r.frequency === 'weekly' ? r.day >= 0 && r.day <= 6 : r.day >= 1 && r.day <= 31), {
+    message: 'Día inválido',
+    path: ['day'],
+  })
+  .refine((r) => r.kind === 'income' || r.categoryId !== undefined, { message: 'Elegí una categoría', path: ['categoryId'] })
+  .refine((r) => (r.method === 'card' ? r.kind === 'expense' && r.cardId !== undefined : r.accountId !== undefined), {
+    message: 'Elegí de dónde sale la plata',
+    path: ['accountId'],
+  })
+  .refine((r) => !r.endDate || r.endDate >= r.startDate, { message: 'Termina antes de empezar', path: ['endDate'] })
+export type RecurringInput = z.infer<typeof recurringInputSchema>
+
+export const budgetInputSchema = z.object({
+  categoryId: z.string().min(1),
+  monthlyLimit: positiveCentsSchema,
+})
+
 /** Primer mensaje de error de un resultado Zod, por campo. */
 export function fieldErrors(error: z.ZodError): Record<string, string> {
   const out: Record<string, string> = {}

@@ -1,6 +1,7 @@
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { useKeyboardInset } from '@/lib/hooks'
 import { FLICK_VELOCITY, springs } from '@/motion/springs'
 import { project } from '@/motion/physics'
 import { useSheetGesture } from '@/motion/useSheetGesture'
@@ -10,6 +11,8 @@ interface SheetProps {
   open: boolean
   onClose: () => void
   title?: string
+  /** Zona fija abajo (fuera del scroll), p. ej. el botón Guardar: queda visible con el teclado abierto. */
+  footer?: ReactNode
   children: ReactNode
 }
 
@@ -19,11 +22,11 @@ interface SheetProps {
  * impulso), y el resorte hereda esa velocidad para que no haya "costura".
  * Con "reducir movimiento" se reemplaza por un fundido.
  */
-export function Sheet({ open, onClose, title, children }: SheetProps) {
+export function Sheet({ open, onClose, title, footer, children }: SheetProps) {
   return createPortal(
     <AnimatePresence>
       {open && (
-        <SheetPanel key="sheet" onClose={onClose} {...(title ? { title } : {})}>
+        <SheetPanel key="sheet" onClose={onClose} {...(title ? { title } : {})} footer={footer}>
           {children}
         </SheetPanel>
       )}
@@ -32,8 +35,9 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
   )
 }
 
-function SheetPanel({ onClose, title, children }: Omit<SheetProps, 'open'>) {
+function SheetPanel({ onClose, title, footer, children }: Omit<SheetProps, 'open'>) {
   const reduced = useReducedMotion() ?? false
+  const keyboard = useKeyboardInset()
   const y = useMotionValue(0)
   const panelRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -114,7 +118,12 @@ function SheetPanel({ onClose, title, children }: Omit<SheetProps, 'open'>) {
         aria-modal="true"
         aria-label={title}
         className="sheet absolute inset-x-0 bottom-0 z-10"
-        style={{ y }}
+        style={{
+          y,
+          // Con el teclado abierto la hoja se apoya arriba del teclado y se achica.
+          bottom: keyboard,
+          ...(keyboard > 0 ? { maxHeight: `calc(100% - var(--safe-top) - 12px - ${keyboard}px)`, paddingBottom: 0 } : {}),
+        }}
         initial={reduced ? { opacity: 0 } : { y: '100%' }}
         animate={reduced ? { opacity: 1 } : { y: 0 }}
         exit={reduced ? { opacity: 0 } : { y: '100%' }}
@@ -131,6 +140,7 @@ function SheetPanel({ onClose, title, children }: Omit<SheetProps, 'open'>) {
         <div ref={contentRef} className="sheet-content flex-1 px-4 pb-4">
           {children}
         </div>
+        {footer && <div className="border-t border-separator/40 px-4 pt-3 pb-3">{footer}</div>}
       </motion.div>
     </div>
   )

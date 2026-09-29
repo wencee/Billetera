@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 
 interface Chip<T extends string | number> {
   value: T
@@ -16,8 +16,24 @@ interface Props<T extends string | number> {
 
 /** Chips de selección única con respuesta al toque. */
 export function Chips<T extends string | number>({ value, options, onChange, layout = 'scroll', ...aria }: Props<T>) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  // Si el elegido quedó fuera de la vista (al editar, o un chip cortado en el borde), la fila se corre para mostrarlo.
+  useEffect(() => {
+    const el = ref.current
+    if (!el || layout !== 'scroll') return
+    const active = el.querySelector<HTMLElement>('[aria-checked="true"]')
+    if (!active) return
+    const c = el.getBoundingClientRect()
+    const a = active.getBoundingClientRect()
+    if (a.left >= c.left && a.right <= c.right) return
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    el.scrollTo({ left: el.scrollLeft + (a.left - c.left) - (c.width - a.width) / 2, behavior: reduced ? 'auto' : 'smooth' })
+  }, [value, options.length, layout])
+
   return (
     <div
+      ref={ref}
       role="radiogroup"
       aria-label={aria['aria-label']}
       className={layout === 'scroll' ? 'flex gap-2 overflow-x-auto px-4 py-1 [scrollbar-width:none]' : 'flex flex-wrap gap-2'}

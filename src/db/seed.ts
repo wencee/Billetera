@@ -1,4 +1,5 @@
 import type { Category, Settings } from '@/core/types'
+import { newId, nowISO } from '@/lib/id'
 import { db } from './db'
 
 const EXPENSE_CATEGORIES: [string, string, string][] = [
@@ -56,10 +57,26 @@ export const DEFAULT_SETTINGS: Settings = {
   sampleDataLoaded: false,
 }
 
-/** Garantiza categorías iniciales y la fila de ajustes. Idempotente. */
+export const DEFAULT_CASH_ACCOUNT_NAME = 'Efectivo'
+
+/**
+ * Garantiza categorías iniciales y la fila de ajustes. Idempotente.
+ * En la primera apertura crea también una cuenta "Efectivo" para poder
+ * cargar un gasto sin configurar nada antes.
+ */
 export async function ensureDefaults(): Promise<void> {
-  await db.transaction('rw', db.categories, db.settings, async () => {
+  await db.transaction('rw', db.categories, db.settings, db.accounts, async () => {
     if ((await db.categories.count()) === 0) await db.categories.bulkAdd(defaultCategories())
-    if (!(await db.settings.get('main'))) await db.settings.add(DEFAULT_SETTINGS)
+    if (!(await db.settings.get('main'))) {
+      await db.settings.add(DEFAULT_SETTINGS)
+      if ((await db.accounts.count()) === 0) {
+        await db.accounts.add({
+          id: newId(), name: DEFAULT_CASH_ACCOUNT_NAME, type: 'cash', currency: 'ARS', initialBalance: 0, archived: false, createdAt: nowISO(),
+        })
+      }
+    }
   })
 }
+
+/** Categoría "Otros" del tipo dado: destino de los movimientos de una categoría borrada. */
+export const fallbackCategoryId = (kind: 'expense' | 'income') => defaultCategoryId(kind, 'Otros')

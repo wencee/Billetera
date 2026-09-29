@@ -39,14 +39,23 @@ export async function loadSampleData(): Promise<void> {
     dueDate: addDays(makeISODate(year, month, 31), 14),
   })
 
+  // Reusar la cuenta "Efectivo" que se crea en la primera apertura, si está.
+  const existingCash = (await db.accounts.toArray()).find((a) => a.type === 'cash' && a.currency === 'ARS' && !a.archived)
+  const cashAccount: Account = existingCash
+    ? { ...existingCash, initialBalance: 5000000 }
+    : { id: newId(), name: 'Efectivo', type: 'cash', currency: 'ARS', initialBalance: 5000000, archived: false, createdAt: created }
   const accounts: Account[] = [
-    { id: newId(), name: 'Efectivo', type: 'cash', currency: 'ARS', initialBalance: 5000000, archived: false, createdAt: created },
+    cashAccount,
     { id: newId(), name: 'Banco Galicia', type: 'bank', currency: 'ARS', initialBalance: 120000000, archived: false, createdAt: created },
     { id: newId(), name: 'Mercado Pago', type: 'wallet', currency: 'ARS', initialBalance: 8500000, archived: false, createdAt: created },
     { id: newId(), name: 'Dólares', type: 'cash', currency: 'USD', initialBalance: 150000, archived: false, createdAt: created },
   ]
-  await db.accounts.bulkAdd(accounts)
-  const [cash, bank, mp] = accounts as [Account, Account, Account, Account]
+  await db.accounts.bulkPut(accounts)
+  const [cash, bank, mp, usd] = accounts as [Account, Account, Account, Account]
+  await db.transfers.bulkAdd([
+    { id: newId(), fromAccountId: bank.id, fromAmount: 5000000, toAccountId: cash.id, toAmount: 5000000, date: addDays(today, -6), note: 'Extracción', createdAt: created },
+    { id: newId(), fromAccountId: bank.id, fromAmount: 14500000, toAccountId: usd.id, toAmount: 10000, date: lastMonth(12), note: 'Compra de dólares', createdAt: created },
+  ])
 
   await createPurchase({
     cardId: visa.id, description: 'Heladera Samsung', merchant: 'Frávega', categoryId: cat('Casa'),

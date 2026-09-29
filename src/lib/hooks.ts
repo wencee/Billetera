@@ -34,3 +34,29 @@ export function useMediaQuery(query: string): boolean {
   }, [query])
   return matches
 }
+
+/**
+ * Alto (px) que tapa el teclado en pantalla, medido con visualViewport.
+ * En iOS el teclado achica el viewport visible pero no el layout, así que
+ * algo fijo abajo quedaría escondido detrás del teclado sin esto.
+ */
+export function useKeyboardInset(): number {
+  const [inset, setInset] = useState(0)
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const update = () => {
+      const covered = window.innerHeight - (vv.height + vv.offsetTop)
+      // Menos de 80px es la barra de herramientas del navegador, no un teclado.
+      setInset(covered > 80 ? Math.round(covered) : 0)
+    }
+    update()
+    vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
+    return () => {
+      vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
+    }
+  }, [])
+  return inset
+}

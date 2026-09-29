@@ -80,3 +80,18 @@ export function formatPeriodLong(period: Period): string {
   const { year, month } = periodParts(period)
   return capitalize(formatDateFns(new Date(year, month - 1, 1), 'MMMM yyyy', { locale: es }))
 }
+
+/**
+ * Encabezado de día para listas: "Hoy", "Ayer", "Sábado 26 de septiembre"
+ * y, si es de otro año, "Sábado 26 de septiembre de 2025".
+ */
+export function formatDayHeader(date: ISODate, today: ISODate): string {
+  if (date === today) return 'Hoy'
+  const d = parseISODate(date)
+  const t = parseISODate(today)
+  const yesterday = new Date(t.getFullYear(), t.getMonth(), t.getDate() - 1)
+  if (d.getTime() === yesterday.getTime()) return 'Ayer'
+  if (d.getTime() === new Date(t.getFullYear(), t.getMonth(), t.getDate() + 1).getTime()) return 'Mañana'
+  const pattern = d.getFullYear() === t.getFullYear() ? "EEEE d 'de' MMMM" : "EEEE d 'de' MMMM 'de' yyyy"
+  return capitalize(formatDateFns(d, pattern, { locale: es }))
+}

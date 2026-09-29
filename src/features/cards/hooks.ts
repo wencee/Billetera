@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import type { Overrides } from '@/core/statements'
-import type { Account, Card, CardPayment, Category, Installment, Purchase, Recurring, Settings } from '@/core/types'
+import type { Card, CardPayment, Installment, Purchase, Recurring } from '@/core/types'
 import { db, toOverrideMap } from '@/db'
 
 export function useCards(includeArchived = false): Card[] | undefined {
@@ -50,17 +50,8 @@ export function usePurchaseInstallments(purchaseId: string | undefined): Install
   }, [purchaseId])
 }
 
-export function useSettings(): Settings | undefined {
-  return useLiveQuery(() => db.settings.get('main'))
-}
-
-export function useCategories(kind: 'expense' | 'income'): Category[] | undefined {
-  return useLiveQuery(() => db.categories.where('kind').equals(kind).sortBy('order'), [kind])
-}
-
-export function useAccounts(): Account[] | undefined {
-  return useLiveQuery(async () => (await db.accounts.toArray()).filter((a) => !a.archived).sort((a, b) => a.createdAt.localeCompare(b.createdAt)))
-}
+// Hooks compartidos con otras pantallas.
+export { useAccounts, useCategories, useSettings } from '@/db/hooks'
 
 export function usePurchasesById(ids: readonly string[]): Map<string, Purchase> | undefined {
   const key = ids.join(',')

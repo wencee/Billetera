@@ -33,7 +33,7 @@ export function Segmented<T extends string>({ value, options, onChange, ...aria 
             {active && (
               <motion.span
                 layoutId={layoutId}
-                className="absolute inset-0 rounded-[7px] bg-surface shadow-[0_1px_4px_rgba(0,0,0,0.12)]"
+                className="absolute inset-0 rounded-[7px] bg-segment shadow-[0_1px_4px_rgba(0,0,0,0.12)]"
                 transition={springs.default}
               />
             )}
