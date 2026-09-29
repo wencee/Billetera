@@ -14,7 +14,8 @@ export default defineConfig({
   // Cada test levanta un WebKit entero: más de dos a la vez satura una PC común.
   workers: process.env.CI ? 1 : 2,
   expect: { timeout: 10_000 },
-  reporter: [['list'], ['html', { open: 'never' }]],
+  // En GitHub, cada falla aparece como anotación del workflow (se ve sin abrir los logs).
+  reporter: process.env.CI ? [['github'], ['list'], ['html', { open: 'never' }]] : [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: 'http://localhost:4173',
     locale: 'es-AR',
