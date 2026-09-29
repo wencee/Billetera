@@ -1,4 +1,4 @@
-import { AlertOctagon, AlertTriangle, ChevronRight, Info, Settings as SettingsIcon, Sparkles } from 'lucide-react'
+import { AlertOctagon, AlertTriangle, ChevronRight, Eye, EyeOff, Info, Settings as SettingsIcon, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { MovementRow } from '@/components/MovementRow'
@@ -10,7 +10,7 @@ import type { Alert, AlertLevel, AlertTarget } from '@/core/alerts'
 import { budgetLevel } from '@/core/budgets'
 import { todayISO } from '@/core/dates'
 import { formatDateLong, formatMoney, formatPeriodLong } from '@/core/format'
-import { loadSampleData } from '@/db'
+import { loadSampleData, updateSettings } from '@/db'
 import { useCategoryMap, useMovements, useSettings } from '@/db/hooks'
 import { goalColor } from '@/features/goals/goalText'
 import { movementOpenPath } from '@/features/movements/routes'
@@ -61,9 +61,21 @@ export function HomeScreen() {
   const money = (c: number) => formatMoney(c, 'ARS', { hide, fractionDigits: 0 })
 
   const settingsButton = (
-    <Pressable pressScale={0.9} aria-label="Ajustes" onClick={() => navigate('/ajustes')} className="flex items-center justify-center text-tint">
-      <SettingsIcon size={24} />
-    </Pressable>
+    <div className="flex items-center">
+      {/* Modo privado con un toque: tapa los montos (para mostrar el teléfono o en el colectivo). */}
+      <Pressable
+        pressScale={0.9}
+        aria-label={hide ? 'Mostrar montos' : 'Ocultar montos'}
+        aria-pressed={hide}
+        onClick={() => void updateSettings({ privateMode: !hide })}
+        className="flex items-center justify-center text-tint"
+      >
+        {hide ? <EyeOff size={24} /> : <Eye size={24} />}
+      </Pressable>
+      <Pressable pressScale={0.9} aria-label="Ajustes" onClick={() => navigate('/ajustes')} className="flex items-center justify-center text-tint">
+        <SettingsIcon size={24} />
+      </Pressable>
+    </div>
   )
 
   if (!dash || !movements) return <Screen title="Inicio" right={settingsButton}>{null}</Screen>

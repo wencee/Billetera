@@ -8,6 +8,7 @@ import { requestPersistentStorage } from '@/lib/storage'
 import { AppShell } from './AppShell'
 import { ErrorBoundary } from './ErrorBoundary'
 import { InstallGate } from './InstallGate'
+import { PinGate } from '@/features/security/PinGate'
 import { UpdatePrompt } from './UpdatePrompt'
 
 // Pantallas en chunks aparte; el service worker las precachea igual, así que funcionan offline.
@@ -36,6 +37,7 @@ const CategoriesScreen = named(() => import('@/features/categories/CategoriesScr
 const RecurringScreen = named(() => import('@/features/recurring/RecurringScreen'), 'RecurringScreen')
 const RecurringForm = named(() => import('@/features/recurring/RecurringForm'), 'RecurringForm')
 const BudgetsScreen = named(() => import('@/features/budgets/BudgetsScreen'), 'BudgetsScreen')
+const BackupScreen = named(() => import('@/features/backup/BackupScreen'), 'BackupScreen')
 
 export function App() {
   const [ready, setReady] = useState(false)
@@ -59,6 +61,7 @@ export function App() {
       <MotionConfig reducedMotion="user">
         <BrowserRouter basename={import.meta.env.BASE_URL}>
           <InstallGate>
+            <PinGate>
             <Routes>
               <Route element={<AppShell />}>
                 <Route index element={<HomeScreen />} />
@@ -98,8 +101,10 @@ export function App() {
                 <Route path="ajustes/fijos/nuevo" element={<RecurringForm />} />
                 <Route path="ajustes/fijos/:id" element={<RecurringForm />} />
                 <Route path="ajustes/presupuestos" element={<BudgetsScreen />} />
+                <Route path="ajustes/backup" element={<BackupScreen />} />
               </Route>
             </Routes>
+            </PinGate>
           </InstallGate>
           <UpdatePrompt />
         </BrowserRouter>

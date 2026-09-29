@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { FolderTree, Minus, PiggyBank, Plus, Repeat, Target, Wallet } from 'lucide-react'
+import { EyeOff, FolderTree, HardDriveDownload, Lock, Minus, PiggyBank, Plus, Repeat, Target, Wallet } from 'lucide-react'
+import { PinSetupSheet, type PinFlow } from '@/features/security/PinSetupSheet'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { InstallScreen } from '@/app/InstallScreen'
@@ -32,6 +33,7 @@ export function SettingsScreen() {
   const [confirmClear, setConfirmClear] = useState(false)
   const [showInstall, setShowInstall] = useState(false)
   const [rateOpen, setRateOpen] = useState(false)
+  const [pinFlow, setPinFlow] = useState<PinFlow | null>(null)
 
   useEffect(() => {
     void getStorageInfo().then(setStorage)
@@ -112,7 +114,25 @@ export function SettingsScreen() {
         )}
       </ListGroup>
 
+      <ListGroup
+        title="Privacidad y seguridad"
+        footer="Con PIN, la app lo pide al abrirla y al volver después de un minuto. Frena a quien agarre tu teléfono desbloqueado; los datos no quedan cifrados. El modo privado también se activa con el ojo de Inicio."
+      >
+        <div className="flex min-h-12 items-center border-b border-separator/60 px-4">
+          <EyeOff size={22} className="mr-3 text-indigo" aria-hidden />
+          <span className="flex-1 text-body">Modo privado (ocultar montos)</span>
+          <Toggle checked={settings?.privateMode ?? false} onChange={(on) => void updateSettings({ privateMode: on })} aria-label="Modo privado" />
+        </div>
+        <div className={`flex min-h-12 items-center px-4 ${settings?.pinHash ? 'border-b border-separator/60' : ''}`}>
+          <Lock size={22} className="mr-3 text-red" aria-hidden />
+          <span className="flex-1 text-body">Bloqueo con PIN</span>
+          <Toggle checked={Boolean(settings?.pinHash)} onChange={(on) => setPinFlow(on ? 'create' : 'remove')} aria-label="Bloqueo con PIN" />
+        </div>
+        {settings?.pinHash && <ListRow label="Cambiar el PIN" chevron onPress={() => setPinFlow('change')} last />}
+      </ListGroup>
+
       <ListGroup title="Datos" footer="Los datos de ejemplo sirven para ver la app con contenido. Se borran con «Borrar todos los datos».">
+        <ListRow icon={<HardDriveDownload size={22} className="text-tint" />} label="Backup y datos" value={backupAge(settings?.lastBackupAt)} chevron onPress={() => navigate('/ajustes/backup')} />
         <ListRow
           label={settings?.sampleDataLoaded ? 'Datos de ejemplo ya cargados' : 'Cargar datos de ejemplo'}
           onPress={settings?.sampleDataLoaded || busy ? undefined : () => void runSample()}
@@ -132,10 +152,8 @@ export function SettingsScreen() {
         <ListRow label="Cómo instalar en tu iPhone" chevron onPress={() => setShowInstall(true)} last />
       </ListGroup>
 
-      <ListGroup title="Próximamente">
-        <ListRow label="Backups, PIN y modo privado" value="fase 6" last />
-      </ListGroup>
 
+      <PinSetupSheet flow={pinFlow} onClose={() => setPinFlow(null)} />
       <UsdRateSheet open={rateOpen} onClose={() => setRateOpen(false)} current={settings?.usdRate ?? 0} />
 
       <Sheet open={confirmClear} onClose={() => setConfirmClear(false)} title="¿Borrar todos los datos?">
@@ -157,6 +175,12 @@ export function SettingsScreen() {
       </Sheet>
     </Screen>
   )
+}
+
+function backupAge(iso?: string): string {
+  if (!iso) return 'nunca'
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000)
+  return days === 0 ? 'hoy' : days === 1 ? 'ayer' : `hace ${days} días`
 }
 
 function UsdRateSheet({ open, onClose, current }: { open: boolean; onClose: () => void; current: number }) {

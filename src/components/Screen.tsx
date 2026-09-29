@@ -21,7 +21,7 @@ export function Screen({ title, back, backTo, right, compact = false, children }
   const scrolled = useScrolled(ref, compact ? 0 : 24)
   return (
     <>
-      <GlassHeader title={title} showTitle={compact || scrolled} {...(back ? { back } : {})} {...(backTo ? { backTo } : {})} right={right} />
+      <GlassHeader title={title} isHeading={compact} showTitle={compact || scrolled} {...(back ? { back } : {})} {...(backTo ? { backTo } : {})} right={right} />
       <div ref={ref} className="screen-scroll">
         {!compact && <h1 className="px-4 pb-2 pt-1 text-largetitle">{title}</h1>}
         {children}

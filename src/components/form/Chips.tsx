@@ -49,7 +49,7 @@ export function Chips<T extends string | number>({ value, options, onChange, lay
             aria-checked={active}
             onClick={() => onChange(o.value)}
             className={`shrink-0 rounded-full px-4 py-2 text-subhead font-medium transition-[background-color,transform] duration-100 active:scale-95 ${
-              active ? 'bg-tint text-white' : 'bg-fill text-label'
+              active ? 'bg-accent text-white' : 'bg-fill text-label'
             }`}
           >
             {o.label}

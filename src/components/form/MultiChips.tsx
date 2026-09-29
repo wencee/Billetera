@@ -22,7 +22,7 @@ export function MultiChips<T extends string>({ values, options, onChange, ...ari
             aria-pressed={active}
             onClick={() => toggle(o.value)}
             className={`flex items-center gap-1 rounded-full px-3.5 py-2 text-subhead font-medium transition-[background-color,transform] duration-100 active:scale-95 ${
-              active ? 'bg-tint text-white' : 'bg-fill text-label'
+              active ? 'bg-accent text-white' : 'bg-fill text-label'
             }`}
           >
             {active && <Check size={14} strokeWidth={3} aria-hidden />}

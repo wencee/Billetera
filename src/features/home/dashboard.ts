@@ -82,9 +82,9 @@ export function useDashboard(): Dashboard | undefined {
       budgets: rows.map((r) => ({ ...r, name: r.category?.name ?? 'Categoría', icon: r.category?.icon ?? '📦' })),
       goals: goals.map(({ goal, summary }) => ({ ...goal, done: summary.done, remaining: summary.remaining })),
       investments: data.investments,
-      // El aviso de backup se activa cuando exista la función de backup (fase 6).
-      backup: { enabled: false, hasData: data.expenses.length + data.purchases.length > 0, lastBackupAt: data.settings?.lastBackupAt },
+      backup: { enabled: true, hasData: data.expenses.length + data.purchases.length > 0, lastBackupAt: data.settings?.lastBackupAt },
       usd: { rate: usdRate, date: data.settings?.usdRateDate, inUse: hasUSD },
+      hide: data.settings?.privateMode ?? false,
     })
 
     return {

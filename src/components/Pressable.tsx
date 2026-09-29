@@ -32,7 +32,7 @@ export const Pressable = forwardRef<HTMLButtonElement, Props>(function Pressable
 type ButtonProps = Props & { variant?: 'primary' | 'secondary' | 'destructive' | 'plain' }
 
 const variants: Record<NonNullable<ButtonProps['variant']>, string> = {
-  primary: 'bg-tint text-white font-semibold',
+  primary: 'bg-accent text-white font-semibold',
   secondary: 'bg-fill text-tint font-semibold',
   destructive: 'bg-fill text-red font-semibold',
   plain: 'text-tint',

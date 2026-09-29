@@ -271,6 +271,8 @@ export interface Settings {
   alertDaysAhead: number
   pinHash?: string
   pinSalt?: string
+  /** Largo del PIN, para validar apenas se completa (como el código del iPhone). */
+  pinLength?: number
   privateMode: boolean
   lastBackupAt?: string
   /** Mostrar la cantidad de avisos en el ícono de la app (requiere permiso de notificaciones en iOS). */

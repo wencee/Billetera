@@ -66,7 +66,7 @@ export function GoalDetail() {
             </div>
           </ProgressRing>
         </motion.div>
-        <h1 className="mt-4 text-title2">{goal.name}</h1>
+        <h2 className="mt-4 text-title2">{goal.name}</h2>
         <p className="tabular text-body text-label-2">
           {money0(s.saved)} de {money0(goal.targetAmount)}
         </p>

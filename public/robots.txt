@@ -1,0 +1,3 @@
+# App personal: no hace falta que aparezca en buscadores (igual es un sitio vacío; los datos viven en cada teléfono).
+User-agent: *
+Disallow: /

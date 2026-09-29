@@ -63,7 +63,7 @@ export function MovementsScreen() {
         <Pressable pressScale={0.9} aria-label={`Filtros${extraFilters ? ` (${extraFilters} activos)` : ''}`} onClick={() => setFiltersOpen(true)} className="relative flex items-center justify-center rounded-xl text-tint">
           <SlidersHorizontal size={22} />
           {extraFilters > 0 && (
-            <span className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-tint px-1 text-caption2 font-bold text-white">{extraFilters}</span>
+            <span className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1 text-caption2 font-bold text-white">{extraFilters}</span>
           )}
         </Pressable>
       </div>

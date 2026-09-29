@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { NBSP, formatDate, formatDateShort, formatDayHeader, formatMoney, formatMoneyCompact, formatPct, formatPeriod, formatPeriodLong } from './format'
+import { MINUS, NBSP, formatDate, formatDateShort, formatDayHeader, formatMoney, formatMoneyCompact, formatPct, formatPeriod, formatPeriodLong } from './format'
 
 describe('formatDayHeader', () => {
   it('hoy, ayer, mañana y fechas largas', () => {
@@ -30,7 +30,7 @@ describe('formatMoney es-AR', () => {
     expect(plain(formatMoney(123456, 'USD', { hide: true }))).toBe('US$ ••••')
   })
   it('negativos y signo', () => {
-    expect(plain(formatMoney(-5000))).toBe('-$ 50,00')
+    expect(plain(formatMoney(-5000))).toBe(`${MINUS}$ 50,00`)
     expect(plain(formatMoney(5000, 'ARS', { signed: true }))).toBe('+$ 50,00')
   })
 })

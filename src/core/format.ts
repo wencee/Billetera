@@ -19,6 +19,9 @@ const moneyFormatters: Record<Currency, Record<'2' | '0', Intl.NumberFormat>> = 
 /** Espacio duro: el mismo que usa Intl entre el símbolo y la cifra. */
 export const NBSP = String.fromCharCode(160)
 
+/** Signo menos tipográfico (U+2212). */
+export const MINUS = String.fromCharCode(0x2212)
+
 export const CURRENCY_SYMBOL: Record<Currency, string> = { ARS: '$', USD: 'US$' }
 
 export interface MoneyFormatOptions {
@@ -34,7 +37,8 @@ export interface MoneyFormatOptions {
 export function formatMoney(cents: Cents, currency: Currency = 'ARS', opts: MoneyFormatOptions = {}): string {
   const { hide = false, fractionDigits = 2, signed = false } = opts
   if (hide) return `${CURRENCY_SYMBOL[currency]}${NBSP}••••`
-  const formatted = moneyFormatters[currency][fractionDigits === 0 ? '0' : '2'].format(cents / 100)
+  // Signo menos tipográfico (U+2212), el mismo que usan las filas de movimientos.
+  const formatted = moneyFormatters[currency][fractionDigits === 0 ? '0' : '2'].format(cents / 100).replace('-', MINUS)
   return signed && cents > 0 ? `+${formatted}` : formatted
 }
 

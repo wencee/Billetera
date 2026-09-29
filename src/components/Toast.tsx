@@ -17,7 +17,8 @@ export function ToastHost() {
 
   return (
     <div className="pointer-events-none absolute inset-x-0 z-40 flex justify-center px-4" style={{ bottom: 'calc(var(--safe-bottom) + var(--tabbar-h) + 0.75rem)' }}>
-      <AnimatePresence>
+      {/* "wait": el aviso nuevo espera a que se vaya el anterior, así nunca hay dos "Deshacer" tocables. */}
+      <AnimatePresence mode="wait">
         {toast && (
           <motion.div
             key={toast.id}

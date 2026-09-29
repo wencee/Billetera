@@ -11,6 +11,7 @@ import { formatMoney } from '@/core/format'
 import { fieldErrors, goalEntryInputSchema } from '@/core/schemas'
 import type { Account, Cents, Goal } from '@/core/types'
 import { addGoalEntry, deleteGoalEntry } from '@/db'
+import { useSettings } from '@/db/hooks'
 import { ACCOUNT_TYPE_ICON } from '@/lib/labels'
 
 const NO_ACCOUNT = 'none'
@@ -29,6 +30,7 @@ interface Props {
 /** Aportar a una meta (sale de una cuenta) o retirar (vuelve a una cuenta). Sin cuenta = solo registro. */
 export function EntrySheet({ goal, mode, saved, accounts, balances, onClose, onCompleted }: Props) {
   const withdraw = mode === 'withdraw'
+  const hide = useSettings()?.privateMode ?? false
   const eligible = accounts.filter((a) => a.currency === goal.currency)
   const [amount, setAmount] = useState<Cents | null>(null)
   const [accountId, setAccountId] = useState(NO_ACCOUNT)
@@ -86,7 +88,7 @@ export function EntrySheet({ goal, mode, saved, accounts, balances, onClose, onC
         <div>
           <AmountInput size="hero" value={amount} onChange={setAmount} currency={goal.currency} autoFocus />
           {error && <p className="mt-2 text-center text-footnote text-red">{error}</p>}
-          {withdraw && <p className="mt-1 text-center text-footnote text-label-2">Ahorrado: {formatMoney(saved, goal.currency)}</p>}
+          {withdraw && <p className="mt-1 text-center text-footnote text-label-2">Ahorrado: {formatMoney(saved, goal.currency, { hide })}</p>}
         </div>
         <div>
           <p className="pb-1 text-footnote uppercase text-label-2">{withdraw ? 'Vuelve a' : 'Sale de'}</p>
@@ -101,7 +103,7 @@ export function EntrySheet({ goal, mode, saved, accounts, balances, onClose, onC
           <p className="pt-1 text-footnote text-label-2">
             {accountId === NO_ACCOUNT
               ? 'No mueve plata de ninguna cuenta: sirve para anotar lo que ya tenías guardado.'
-              : balance !== undefined ? `Saldo de la cuenta: ${formatMoney(balance, goal.currency)}` : ''}
+              : balance !== undefined ? `Saldo de la cuenta: ${formatMoney(balance, goal.currency, { hide })}` : ''}
           </p>
         </div>
         <div className="-mx-4">

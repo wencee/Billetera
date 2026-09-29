@@ -46,7 +46,7 @@ export function DatePicker({ value, onChange }: { value: string; onChange: (date
           { value: 'yesterday', label: 'Ayer' },
         ]}
       />
-      <div className={`ml-auto flex h-9 items-center rounded-full px-3 ${preset === 'other' ? 'bg-tint text-white' : 'bg-fill'}`}>
+      <div className={`ml-auto flex h-9 items-center rounded-full px-3 ${preset === 'other' ? 'bg-accent text-white' : 'bg-fill'}`}>
         <DateField aria-label="Otra fecha" value={value} max={addDays(today, 366)} onChange={(e) => e.target.value && onChange(e.target.value)} className="w-[9rem] appearance-none" />
       </div>
     </div>

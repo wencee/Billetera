@@ -50,6 +50,8 @@ export interface AlertInput {
   investments: readonly { id: string; name: string; maturityDate?: ISODate | undefined; closed: boolean }[]
   backup?: { enabled: boolean; lastBackupAt?: string | undefined; hasData: boolean }
   usd?: { rate: Cents; date?: ISODate | undefined; inUse: boolean }
+  /** Modo privado: los montos de los avisos se tapan. */
+  hide?: boolean
 }
 
 const LEVEL_ORDER: Record<AlertLevel, number> = { danger: 0, warning: 1, info: 2 }
@@ -71,6 +73,7 @@ function statementARS(s: StatementSummary, usdRate = 0): Cents {
 /** Avisos para Inicio (y el número del ícono), ordenados por gravedad y fecha. */
 export function buildAlerts(input: AlertInput): Alert[] {
   const { today, daysAhead } = input
+  const money = (c: Cents, currency: Currency, digits: 0 | 2 = 0) => formatMoney(c, currency, { fractionDigits: digits, hide: input.hide ?? false })
   const horizon = addDays(today, daysAhead)
   const out: Alert[] = []
 
@@ -83,13 +86,13 @@ export function buildAlerts(input: AlertInput): Alert[] {
         out.push({
           id: `cardOverdue:${card.id}:${s.period}`, kind: 'cardOverdue', level: 'danger', date: s.dueDate, target,
           title: `Resumen de ${card.label} vencido`,
-          detail: `Venció el ${formatDate(s.dueDate)} · ${s.payment.status === 'unpaid' ? 'sin pagar' : `faltan ${formatMoney(owed, 'ARS', { fractionDigits: 0 })}`}`,
+          detail: `Venció el ${formatDate(s.dueDate)} · ${s.payment.status === 'unpaid' ? 'sin pagar' : `faltan ${money(owed, 'ARS')}`}`,
         })
       } else if (s.dueDate >= today && s.dueDate <= horizon) {
         out.push({
           id: `cardDue:${card.id}:${s.period}`, kind: 'cardDue', level: 'warning', date: s.dueDate, target,
           title: `Vence el resumen de ${card.label}`,
-          detail: `${capitalize(inDays(diffDays(today, s.dueDate)))} (${formatDateShort(s.dueDate)}) · ${formatMoney(owed, 'ARS', { fractionDigits: 0 })}${s.totals.USD > 0 && !card.usdRate ? ` + ${formatMoney(s.totals.USD, 'USD')}` : ''}`,
+          detail: `${capitalize(inDays(diffDays(today, s.dueDate)))} (${formatDateShort(s.dueDate)}) · ${money(owed, 'ARS')}${s.totals.USD > 0 && !card.usdRate ? ` + ${money(s.totals.USD, 'USD', 2)}` : ''}`,
         })
       }
     }
@@ -99,7 +102,7 @@ export function buildAlerts(input: AlertInput): Alert[] {
         id: `cardClosing:${card.id}:${c.period}`, kind: 'cardClosing', level: 'info', date: c.closingDate,
         target: { type: 'statement', cardId: card.id, period: c.period },
         title: `${card.label} cierra ${inDays(diffDays(today, c.closingDate))}`,
-        detail: `Cierre ${formatDateShort(c.closingDate)} · lleva ${formatMoney(statementARS(c, card.usdRate), 'ARS', { fractionDigits: 0 })}`,
+        detail: `Cierre ${formatDateShort(c.closingDate)} · lleva ${money(statementARS(c, card.usdRate), 'ARS')}`,
       })
     }
   }
@@ -109,13 +112,13 @@ export function buildAlerts(input: AlertInput): Alert[] {
       out.push({
         id: `budgetOver:${b.categoryId}`, kind: 'budgetOver', level: 'danger', target: { type: 'budgets' },
         title: `${b.icon} ${b.name}: te pasaste del presupuesto`,
-        detail: `${formatMoney(b.spent, 'ARS', { fractionDigits: 0 })} de ${formatMoney(b.limit, 'ARS', { fractionDigits: 0 })} (${Math.round(b.pct * 100)} %)`,
+        detail: `${money(b.spent, 'ARS')} de ${money(b.limit, 'ARS')} (${Math.round(b.pct * 100)} %)`,
       })
     } else if (b.level === 'warning') {
       out.push({
         id: `budgetWarning:${b.categoryId}`, kind: 'budgetWarning', level: 'warning', target: { type: 'budgets' },
         title: `${b.icon} ${b.name} al ${Math.round(b.pct * 100)} % del presupuesto`,
-        detail: `Quedan ${formatMoney(b.remaining, 'ARS', { fractionDigits: 0 })} este mes`,
+        detail: `Quedan ${money(b.remaining, 'ARS')} este mes`,
       })
     }
   }
@@ -127,13 +130,13 @@ export function buildAlerts(input: AlertInput): Alert[] {
       out.push({
         id: `goalOverdue:${g.id}`, kind: 'goalOverdue', level: 'info', date: g.targetDate, target: { type: 'goal', id: g.id },
         title: `${g.emoji} ${g.name}: la fecha ya pasó`,
-        detail: `Faltan ${formatMoney(g.remaining, g.currency, { fractionDigits: 0 })}. Podés mover la fecha.`,
+        detail: `Faltan ${money(g.remaining, g.currency)}. Podés mover la fecha.`,
       })
     } else if (days >= 0 && days <= 30) {
       out.push({
         id: `goalSoon:${g.id}`, kind: 'goalSoon', level: 'warning', date: g.targetDate, target: { type: 'goal', id: g.id },
         title: `${g.emoji} ${g.name}: ${days === 0 ? 'es hoy' : `faltan ${days} ${days === 1 ? 'día' : 'días'}`}`,
-        detail: `Te faltan ${formatMoney(g.remaining, g.currency, { fractionDigits: 0 })}`,
+        detail: `Te faltan ${money(g.remaining, g.currency)}`,
       })
     }
   }

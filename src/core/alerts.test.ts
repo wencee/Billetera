@@ -76,3 +76,10 @@ describe('buildAlerts: presupuestos, metas, inversiones, backup y dólar', () =>
     expect(buildAlerts({ ...empty, backup: { enabled: true, hasData: false } })).toEqual([])
   })
 })
+
+describe('buildAlerts en modo privado', () => {
+  it('tapa los montos del detalle', () => {
+    const alerts = buildAlerts({ ...empty, cards: [visa()], hide: true })
+    expect(alerts.find((a) => a.kind === 'cardDue')!.detail.replace(/ /g, ' ')).toBe('En 2 días (10 oct) · $ ••••')
+  })
+})

@@ -41,6 +41,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        // iOS lee las pantallas de arranque al instalar: no hace falta guardarlas offline.
+        globIgnores: ['**/splash/**'],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
       },

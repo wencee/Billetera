@@ -7,12 +7,15 @@
   --ios-surface: #ffffff;
   --ios-surface-2: #f2f2f7;
   --ios-label: #000000;
-  --ios-label-2: rgba(60, 60, 67, 0.6);
+  /* Algo más oscuro que el de iOS (0.6) para llegar a 4,5:1 (WCAG AA) en todos los fondos. */
+  --ios-label-2: rgba(60, 60, 67, 0.75);
   --ios-label-3: rgba(60, 60, 67, 0.3);
   --ios-separator: rgba(60, 60, 67, 0.29);
   --ios-fill: rgba(120, 120, 128, 0.2);
   --ios-fill-2: rgba(120, 120, 128, 0.16);
-  --ios-tint: #007aff;
+  /* Azul para texto e íconos, y para rellenos con texto blanco: ambos ≥ 4,5:1. */
+  --ios-tint: #005ecb;
+  --ios-accent: #005ecb;
   --ios-green: #34c759;
   --ios-red: #ff3b30;
   --ios-orange: #ff9500;
@@ -51,12 +54,13 @@
     --ios-surface: #1c1c1e;
     --ios-surface-2: #2c2c2e;
     --ios-label: #ffffff;
-    --ios-label-2: rgba(235, 235, 245, 0.6);
+    --ios-label-2: rgba(235, 235, 245, 0.65);
     --ios-label-3: rgba(235, 235, 245, 0.3);
     --ios-separator: rgba(84, 84, 88, 0.65);
     --ios-fill: rgba(120, 120, 128, 0.36);
     --ios-fill-2: rgba(120, 120, 128, 0.32);
-    --ios-tint: #0a84ff;
+    --ios-tint: #64afff;
+    --ios-accent: #0070e0;
     --ios-green: #30d158;
     --ios-red: #ff453a;
     --ios-orange: #ff9f0a;
@@ -95,6 +99,7 @@
   --color-fill: var(--ios-fill);
   --color-fill-2: var(--ios-fill-2);
   --color-tint: var(--ios-tint);
+  --color-accent: var(--ios-accent);
   --color-green: var(--ios-green);
   --color-red: var(--ios-red);
   --color-orange: var(--ios-orange);

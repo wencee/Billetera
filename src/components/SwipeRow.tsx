@@ -105,7 +105,7 @@ export function SwipeRow({ rowKey, children, onPress, onEdit, onDelete, deleteLa
               setOpenKey(null)
               onEdit()
             }}
-            className="flex w-[76px] shrink-0 flex-col items-center justify-center gap-1 bg-tint text-caption1 font-semibold text-white"
+            className="flex w-[76px] shrink-0 flex-col items-center justify-center gap-1 bg-accent text-caption1 font-semibold text-white"
           >
             <Pencil size={20} aria-hidden />
             Editar

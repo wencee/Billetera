@@ -32,11 +32,12 @@ export function CreditCardFace({ card, limit, privateMode = false, onEdit, foote
   const tone = usedPct >= 1 ? 'red' : usedPct >= 0.8 ? 'orange' : 'white'
   return (
     <div
-      className="relative aspect-[1.586] w-full select-none overflow-hidden rounded-2xl p-5 text-white shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
+      className="relative flex aspect-[1.586] w-full select-none flex-col overflow-hidden rounded-2xl p-5 text-white shadow-[0_12px_32px_rgba(0,0,0,0.28)]"
       style={{ background: `linear-gradient(135deg, ${card.color} 0%, color-mix(in srgb, ${card.color} 55%, black) 100%)` }}
     >
       <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-white/10" aria-hidden />
-      <div className="relative flex h-full flex-col">
+      {/* flex-1 y no h-full: en WebKit el 100% dentro de una caja con aspect-ratio se resuelve mal y corta el pie. */}
+      <div className="relative flex min-h-0 flex-1 flex-col">
         <div className="flex items-start justify-between">
           <div>
             <p className="text-headline">{card.name}</p>

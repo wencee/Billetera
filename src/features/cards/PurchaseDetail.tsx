@@ -67,7 +67,7 @@ export function PurchaseDetail() {
             {category?.icon ?? '💳'}
           </span>
           <div className="min-w-0">
-            <h1 className="truncate text-title2">{purchase.description}</h1>
+            <h2 className="truncate text-title2">{purchase.description}</h2>
             <p className="text-subhead text-label-2">
               {[purchase.merchant, category?.name, card ? `${card.name} •${card.last4}` : null].filter(Boolean).join(' · ')}
             </p>
