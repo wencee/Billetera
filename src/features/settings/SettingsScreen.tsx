@@ -13,6 +13,9 @@ import { formatDate, formatMoney } from '@/core/format'
 import { clearAllData, db, loadSampleData, updateSettings } from '@/db'
 import { useSettings } from '@/db/hooks'
 import { isStandalone } from '@/lib/platform'
+import { badgeSupported, enableBadge } from '@/lib/badge'
+import { Toggle } from '@/components/form/Toggle'
+import { toast } from '@/app/toast'
 import { formatBytes, getStorageInfo, type StorageInfo } from '@/lib/storage'
 
 export function SettingsScreen() {
@@ -56,6 +59,14 @@ export function SettingsScreen() {
   const persisted = storage?.persisted === null || storage?.persisted === undefined ? 'no disponible' : storage.persisted ? 'sí' : 'no'
   const alertDays = settings?.alertDaysAhead ?? 3
   const setAlertDays = (n: number) => void updateSettings({ alertDaysAhead: Math.max(0, Math.min(15, n)) })
+  const toggleBadge = async (on: boolean) => {
+    if (!on) {
+      await updateSettings({ appBadge: false })
+      return
+    }
+    if (await enableBadge()) await updateSettings({ appBadge: true })
+    else toast(isStandalone() ? 'Sin permiso de notificaciones no se puede mostrar el número' : 'Instalá la app en la pantalla de inicio para ver el número en el ícono')
+  }
 
   return (
     <Screen title="Ajustes" back="Inicio" backTo="/">
@@ -80,7 +91,7 @@ export function SettingsScreen() {
         />
       </ListGroup>
 
-      <ListGroup title="Avisos" footer="Con cuántos días de anticipación avisar cierres y vencimientos de tarjetas en Inicio.">
+      <ListGroup title="Avisos" footer={`Con cuántos días de anticipación avisar cierres, vencimientos y plazos fijos en Inicio.${badgeSupported() ? ' El número en el ícono cuenta los avisos que piden acción; iOS pide permiso de notificaciones para mostrarlo (la app no manda notificaciones).' : ''}`}>
         <div className="flex min-h-12 items-center px-4">
           <span className="flex-1 text-body">Avisar antes</span>
           <div className="flex items-center gap-1 rounded-lg bg-fill">
@@ -93,6 +104,12 @@ export function SettingsScreen() {
             </button>
           </div>
         </div>
+        {badgeSupported() && (
+          <div className="flex min-h-12 items-center border-t border-separator/60 px-4">
+            <span className="flex-1 text-body">Número en el ícono</span>
+            <Toggle checked={settings?.appBadge ?? false} onChange={(on) => void toggleBadge(on)} aria-label="Número en el ícono de la app" />
+          </div>
+        )}
       </ListGroup>
 
       <ListGroup title="Datos" footer="Los datos de ejemplo sirven para ver la app con contenido. Se borran con «Borrar todos los datos».">
@@ -116,7 +133,6 @@ export function SettingsScreen() {
       </ListGroup>
 
       <ListGroup title="Próximamente">
-        <ListRow label="Metas y ahorros" value="fase 4" />
         <ListRow label="Backups, PIN y modo privado" value="fase 6" last />
       </ListGroup>
 

@@ -7,7 +7,7 @@ import { useAccounts, useAllCards, useCategories } from '@/db/hooks'
 import { METHOD_LABEL, type AnyMethod } from '@/lib/labels'
 import { RANGE_LABEL, useMovementFilters, type RangePreset } from './filterStore'
 
-const METHOD_OPTIONS: AnyMethod[] = ['cash', 'debit', 'transfer', 'wallet', 'card', 'transfer-internal', 'card-payment']
+const METHOD_OPTIONS: AnyMethod[] = ['cash', 'debit', 'transfer', 'wallet', 'card', 'transfer-internal', 'card-payment', 'saving']
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (

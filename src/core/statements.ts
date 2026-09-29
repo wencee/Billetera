@@ -144,3 +144,28 @@ export function summarizeStatement(params: {
   const payment = statementStatus(totals.ARS + usdInArs, payments.filter((p) => p.period === period))
   return { ...dates, totals, count: inPeriod.length, closed: dates.closingDate < today, payment }
 }
+
+/**
+ * Resúmenes de una tarjeta que vencen dentro del mes `month` (calendario),
+ * sin importar si ya se pagaron. Un resumen vence como mucho ~2 meses después
+ * de su período, así que alcanza con mirar los tres períodos anteriores.
+ */
+export function statementsDueInMonth(params: {
+  card: CardCycle
+  month: Period
+  installments: readonly { period: Period; amount: Cents; currency: 'ARS' | 'USD' }[]
+  payments: readonly { period: Period; amount: Cents; kind: 'total' | 'partial' | 'minimum' }[]
+  today: ISODate
+  overrides?: Overrides
+  usdRate?: Cents
+}): StatementSummary[] {
+  const { month, ...rest } = params
+  return [-2, -1, 0]
+    .map((offset) => summarizeStatement({ ...rest, period: addPeriods(month, offset) }))
+    .filter((s) => periodOf(s.dueDate) === month && s.count > 0)
+}
+
+/** Total en pesos de un resumen (USD convertido si hay cotización). */
+export function statementTotalARS(s: Pick<StatementSummary, 'totals'>, usdRate: Cents = 0): Cents {
+  return s.totals.ARS + (usdRate > 0 ? Math.round((s.totals.USD * usdRate) / 100) : 0)
+}

@@ -9,17 +9,27 @@ export interface BalanceInput {
   cardPayments: readonly { accountId?: string | undefined; amount: Cents; date: ISODate }[]
   /** Aportes a metas (positivo = sale plata de la cuenta, negativo = retiro que vuelve). */
   goalEntries?: readonly { accountId?: string | undefined; amount: Cents; date: ISODate }[]
+  /** Inversiones: salen de `accountId` al invertir y, al rescatar, entran en `closedAccountId`. */
+  investments?: readonly {
+    accountId?: string | undefined
+    amount: Cents
+    date: ISODate
+    closed: boolean
+    closedAt?: ISODate | undefined
+    closedAmount?: Cents | undefined
+    closedAccountId?: string | undefined
+  }[]
   /** Solo cuenta movimientos con fecha hasta este día inclusive (los futuros no afectan el saldo actual). */
   asOf?: ISODate
 }
 
 /**
  * Saldo de cada cuenta = saldo inicial + ingresos − gastos ± transferencias
- * − pagos de tarjeta − aportes a metas. El saldo nunca se guarda: se calcula
+ * − pagos de tarjeta − aportes a metas − inversiones (+ rescates). El saldo nunca se guarda: se calcula
  * siempre a partir de los movimientos, así no se desincroniza.
  */
 export function accountBalances(input: BalanceInput): Map<string, Cents> {
-  const { accounts, expenses, incomes, transfers, cardPayments, goalEntries = [], asOf } = input
+  const { accounts, expenses, incomes, transfers, cardPayments, goalEntries = [], investments = [], asOf } = input
   const balances = new Map<string, Cents>()
   for (const a of accounts) balances.set(a.id, a.initialBalance)
   const inRange = (date: ISODate) => asOf === undefined || date <= asOf
@@ -36,6 +46,10 @@ export function accountBalances(input: BalanceInput): Map<string, Cents> {
   }
   for (const p of cardPayments) if (inRange(p.date)) add(p.accountId, -p.amount)
   for (const g of goalEntries) if (inRange(g.date)) add(g.accountId, -g.amount)
+  for (const inv of investments) {
+    if (inRange(inv.date)) add(inv.accountId, -inv.amount)
+    if (inv.closed && inv.closedAt && inv.closedAmount !== undefined && inRange(inv.closedAt)) add(inv.closedAccountId, inv.closedAmount)
+  }
   return balances
 }
 

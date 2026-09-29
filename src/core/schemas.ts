@@ -153,6 +153,49 @@ export const recurringInputSchema = z
   .refine((r) => !r.endDate || r.endDate >= r.startDate, { message: 'Termina antes de empezar', path: ['endDate'] })
 export type RecurringInput = z.infer<typeof recurringInputSchema>
 
+export const goalInputSchema = z.object({
+  name: nameSchema(40),
+  emoji: z.string().trim().min(1, 'Elegí un ícono').max(16),
+  targetAmount: positiveCentsSchema,
+  currency: currencySchema,
+  targetDate: isoDateSchema.optional(),
+})
+export type GoalInput = z.infer<typeof goalInputSchema>
+
+export const goalEntryInputSchema = z.object({
+  goalId: z.string().min(1),
+  /** Negativo = retiro. */
+  amount: centsSchema.refine((v) => v !== 0, 'El monto tiene que ser distinto de cero'),
+  date: isoDateSchema,
+  accountId: z.string().min(1).optional(),
+  note: noteSchema,
+})
+export type GoalEntryInput = z.infer<typeof goalEntryInputSchema>
+
+export const investmentInputSchema = z
+  .object({
+    type: z.enum(['ars', 'usd', 'plazo_fijo', 'fci', 'crypto', 'other']),
+    name: nameSchema(40),
+    amount: positiveCentsSchema,
+    currency: currencySchema,
+    date: isoDateSchema,
+    tna: z.number().min(0, 'La TNA no puede ser negativa').max(20, 'TNA fuera de rango').optional(),
+    maturityDate: isoDateSchema.optional(),
+    accountId: z.string().min(1).optional(),
+    notes: z.string().trim().max(500).optional(),
+  })
+  .refine((i) => i.type !== 'plazo_fijo' || i.tna !== undefined, { message: 'Cargá la TNA', path: ['tna'] })
+  .refine((i) => i.type !== 'plazo_fijo' || i.maturityDate !== undefined, { message: 'Cargá el vencimiento', path: ['maturityDate'] })
+  .refine((i) => !i.maturityDate || i.maturityDate > i.date, { message: 'El vencimiento tiene que ser posterior a la fecha', path: ['maturityDate'] })
+export type InvestmentInput = z.infer<typeof investmentInputSchema>
+
+export const closeInvestmentSchema = z.object({
+  amount: centsSchema.nonnegative('El monto no puede ser negativo'),
+  date: isoDateSchema,
+  accountId: z.string().min(1).optional(),
+})
+export type CloseInvestmentInput = z.infer<typeof closeInvestmentSchema>
+
 export const budgetInputSchema = z.object({
   categoryId: z.string().min(1),
   monthlyLimit: positiveCentsSchema,

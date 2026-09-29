@@ -24,6 +24,19 @@
   --glass-bg: rgba(249, 249, 249, 0.72);
   --glass-edge: rgba(255, 255, 255, 0.6);
   --ios-segment: #ffffff;
+  /* Gráficos: paleta categórica validada (orden fijo; ver skill dataviz) y tinta de ejes. */
+  --viz-1: #2a78d6;
+  --viz-2: #eb6834;
+  --viz-3: #1baf7a;
+  --viz-4: #eda100;
+  --viz-5: #e87ba4;
+  --viz-6: #008300;
+  --viz-7: #4a3aa7;
+  --viz-8: #e34948;
+  --viz-grid: #e1e0d9;
+  --viz-axis: #c3c2b7;
+  --viz-muted: #898781;
+  --viz-deemph: #cfcec8;
   --header-h: 44px;
   --tabbar-h: 49px;
   --safe-top: env(safe-area-inset-top, 0px);
@@ -55,6 +68,18 @@
     --glass-bg: rgba(29, 29, 31, 0.72);
     --glass-edge: rgba(255, 255, 255, 0.12);
     --ios-segment: #636366;
+    --viz-1: #3987e5;
+    --viz-2: #d95926;
+    --viz-3: #199e70;
+    --viz-4: #c98500;
+    --viz-5: #d55181;
+    --viz-6: #008300;
+    --viz-7: #9085e9;
+    --viz-8: #e66767;
+    --viz-grid: #2c2c2a;
+    --viz-axis: #383835;
+    --viz-muted: #898781;
+    --viz-deemph: #48484a;
   }
 }
 
@@ -79,6 +104,9 @@
   --color-teal: var(--ios-teal);
   --color-pink: var(--ios-pink);
   --color-segment: var(--ios-segment);
+  --color-viz-1: var(--viz-1);
+  --color-viz-2: var(--viz-2);
+  --color-viz-deemph: var(--viz-deemph);
 
   --font-sans: system-ui, -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
 

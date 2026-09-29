@@ -10,7 +10,7 @@ import { Screen } from '@/components/Screen'
 import { SearchField } from '@/components/SearchField'
 import { SwipeRow } from '@/components/SwipeRow'
 import { todayISO } from '@/core/dates'
-import { formatDayHeader, formatMoney } from '@/core/format'
+import { formatDate, formatDayHeader, formatMoney } from '@/core/format'
 import { activeFilterCount, filterMovements, groupByDay, movementTotals, type Movement } from '@/core/movements'
 import { deleteMovement } from '@/db'
 import { useCategoryMap, useMovements, useSettings } from '@/db/hooks'
@@ -74,7 +74,16 @@ export function MovementsScreen() {
       {movements && filtered.length > 0 && (
         <div className="grid grid-cols-2 gap-3 px-4 pt-4">
           <div className="card p-3">
-            <p className="text-footnote text-label-2">Gastado{filters.range !== 'all' ? ` · ${RANGE_LABEL[filters.range].toLowerCase()}` : ''}</p>
+            <p className="text-footnote text-label-2">
+              Gastado
+              {filters.range === 'custom'
+                ? filters.from || filters.to
+                  ? ` · ${filters.from ? formatDate(filters.from).slice(0, 5) : '…'} al ${filters.to ? formatDate(filters.to).slice(0, 5) : '…'}`
+                  : ''
+                : filters.range !== 'all'
+                  ? ` · ${RANGE_LABEL[filters.range].toLowerCase()}`
+                  : ''}
+            </p>
             <p className="tabular text-title3">{formatMoney(totals.spent.ARS, 'ARS', { hide: privateMode, fractionDigits: 0 })}</p>
             {totals.spent.USD > 0 && <p className="tabular text-footnote text-label-2">+ {formatMoney(totals.spent.USD, 'USD', { hide: privateMode })}</p>}
           </div>
@@ -108,17 +117,24 @@ export function MovementsScreen() {
             )}
           </div>
           <div className="card overflow-hidden">
-            {g.items.map((m, i) => (
+            {g.items.map((m, i) =>
+              // Las inversiones se editan y rescatan desde su detalle: la fila solo navega.
+              m.kind === 'saving' && m.saving?.type !== 'goalEntry' ? (
+                <Pressable key={m.key} pressScale={1} onClick={() => navigate(movementOpenPath(m))} className="block w-full text-left active:bg-fill-2">
+                  <MovementRow movement={m} privateMode={privateMode} last={i === g.items.length - 1} />
+                </Pressable>
+              ) : (
               <SwipeRow
                 key={m.key}
                 rowKey={m.key}
                 onPress={() => navigate(movementOpenPath(m))}
-                {...(m.kind !== 'cardPayment' ? { onEdit: () => navigate(movementEditPath(m)) } : {})}
+                {...(m.kind !== 'cardPayment' && m.kind !== 'saving' ? { onEdit: () => navigate(movementEditPath(m)) } : {})}
                 onDelete={() => void remove(m)}
               >
                 <MovementRow movement={m} category={m.categoryId ? categories?.get(m.categoryId) : undefined} privateMode={privateMode} last={i === g.items.length - 1} />
               </SwipeRow>
-            ))}
+              ),
+            )}
           </div>
         </section>
       ))}

@@ -139,6 +139,27 @@ export async function loadSampleData(): Promise<void> {
   ]
   await db.goalEntries.bulkAdd(entries)
 
+  const emergency: Goal = { id: newId(), name: 'Fondo de emergencia', emoji: '🆘', targetAmount: 300000000, currency: 'ARS', archived: false, createdAt: created }
+  await db.goals.add(emergency)
+  await db.goalEntries.bulkAdd([
+    { id: newId(), goalId: emergency.id, amount: 80000000, date: addMonths(today, -4), note: 'Lo que ya tenía guardado', createdAt: created },
+    { id: newId(), goalId: emergency.id, amount: 15000000, date: addMonths(today, -1), accountId: bank.id, createdAt: created },
+  ])
+
+  // Un plazo fijo a 30 días que vence en unos días y un FCI con valuación cargada.
+  const pfStart = addDays(today, -27)
+  await db.investments.bulkAdd([
+    {
+      id: newId(), type: 'plazo_fijo', name: 'Plazo fijo Galicia', amount: 100000000, currency: 'ARS', date: pfStart,
+      tna: 0.3, maturityDate: addDays(pfStart, 30), accountId: bank.id, closed: false, createdAt: created,
+    },
+    {
+      id: newId(), type: 'fci', name: 'FCI Money Market', amount: 30000000, currency: 'ARS', date: addMonths(today, -2),
+      currentValue: 31320000, currentValueDate: addDays(today, -2), accountId: mp.id, closed: false, createdAt: created,
+    },
+    { id: newId(), type: 'crypto', name: 'USDT', amount: 50000, currency: 'USD', date: addMonths(today, -3), currentValue: 50120, currentValueDate: today, accountId: usd.id, closed: false, createdAt: created },
+  ])
+
   await db.budgets.bulkAdd([
     { id: newId(), categoryId: cat('Supermercado'), monthlyLimit: 30000000 },
     { id: newId(), categoryId: cat('Comida afuera'), monthlyLimit: 15000000 },

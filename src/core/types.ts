@@ -233,8 +233,16 @@ export interface Investment {
   maturityDate?: ISODate
   currentValue?: Cents
   currentValueDate?: ISODate
+  /** Cuenta de la que salió la plata (si no hay, es solo un registro). */
   accountId?: string
   closed: boolean
+  /** Rescate: cuándo, cuánto se cobró y a qué cuenta entró (si no hay cuenta, se reinvirtió). */
+  closedAt?: ISODate
+  closedAmount?: Cents
+  closedAccountId?: string
+  /** Si es una renovación de un plazo fijo anterior. */
+  renewedFromId?: string
+  notes?: string
   createdAt: string
 }
 
@@ -265,5 +273,7 @@ export interface Settings {
   pinSalt?: string
   privateMode: boolean
   lastBackupAt?: string
+  /** Mostrar la cantidad de avisos en el ícono de la app (requiere permiso de notificaciones en iOS). */
+  appBadge?: boolean
   sampleDataLoaded: boolean
 }

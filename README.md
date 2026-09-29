@@ -71,7 +71,7 @@ src/app         router, shell, instalación, aviso de actualización
 - [x] Fase 1 — Proyecto base, PWA instalable, navegación, base de datos, core con tests, deploy
 - [x] Fase 2 — Tarjetas y compras en cuotas (carrusel, intereses, resúmenes, pagos, fechas reales)
 - [x] Fase 3 — Gastos, ingresos, transferencias, cuentas, categorías, fijos y suscripciones, presupuestos, Movimientos y carga rápida
-- [ ] Fase 4 — Metas y ahorros
-- [ ] Fase 5 — Inicio, avisos y estadísticas
+- [x] Fase 4 — Metas (aporte sugerido, ritmo y proyección) e inversiones (plazo fijo con intereses y renovación, FCI, dólares, cripto), patrimonio
+- [x] Fase 5 — Inicio (disponible del mes, avisos, presupuesto, metas), número en el ícono y Estadísticas (categorías, evolución, ingresos vs. gastos, compromisos en cuotas)
 - [ ] Fase 6 — Backups, PIN, modo privado
 - [ ] Fase 7 — Playwright, pulido para iPhone, Lighthouse

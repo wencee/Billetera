@@ -12,7 +12,7 @@ export const RANGE_LABEL: Record<RangePreset, string> = {
   custom: 'Elegir fechas',
 }
 
-export type KindChip = 'all' | 'expense' | 'income' | 'card' | 'transfer'
+export type KindChip = 'all' | 'expense' | 'income' | 'card' | 'transfer' | 'saving'
 
 export const KIND_CHIPS: { value: KindChip; label: string; kinds: MovementKind[] }[] = [
   { value: 'all', label: 'Todos', kinds: [] },
@@ -20,6 +20,7 @@ export const KIND_CHIPS: { value: KindChip; label: string; kinds: MovementKind[]
   { value: 'card', label: 'Tarjeta', kinds: ['card', 'cardPayment'] },
   { value: 'income', label: 'Ingresos', kinds: ['income'] },
   { value: 'transfer', label: 'Transferencias', kinds: ['transfer'] },
+  { value: 'saving', label: 'Ahorros', kinds: ['saving'] },
 ]
 
 export interface FilterState {

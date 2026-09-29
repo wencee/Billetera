@@ -91,5 +91,12 @@ export async function deleteMovement(kind: MovementKind, id: string): Promise<Un
       await deleteCardPayment(id)
       return () => restoreCardPayment(row)
     }
+    case 'saving': {
+      // Solo los aportes/retiros de metas se borran desde la lista; las inversiones, desde su detalle.
+      const row = await db.goalEntries.get(id)
+      if (!row) return null
+      await db.goalEntries.delete(id)
+      return async () => void (await db.goalEntries.put(row))
+    }
   }
 }

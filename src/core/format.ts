@@ -39,6 +39,18 @@ export function formatMoney(cents: Cents, currency: Currency = 'ARS', opts: Mone
 }
 
 const numberFormatter = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 2 })
+const oneDecimal = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 1 })
+
+/**
+ * Para ejes y etiquetas chicas: 1.234.567 → "$ 1,2 M"; 45.000 → "$ 45 mil".
+ * Hecho a mano porque el formato compacto de Intl cambia entre navegadores ("k" / "mil").
+ */
+export function formatMoneyCompact(cents: Cents, currency: Currency = 'ARS'): string {
+  const value = cents / 100
+  const abs = Math.abs(value)
+  const text = abs >= 1e6 ? `${oneDecimal.format(value / 1e6)} M` : abs >= 1e3 ? `${oneDecimal.format(value / 1e3)} mil` : oneDecimal.format(value)
+  return `${CURRENCY_SYMBOL[currency]}${NBSP}${text}`
+}
 
 export function formatNumber(n: number): string {
   return numberFormatter.format(n)

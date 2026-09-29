@@ -1,18 +1,26 @@
 import { Suspense, useEffect } from 'react'
-import { Outlet } from 'react-router'
+import { Outlet, useLocation } from 'react-router'
 import { Fab } from '@/components/Fab'
 import { TabBar } from '@/components/TabBar'
 import { ToastHost } from '@/components/Toast'
 import { generateDueRecurring } from '@/db'
+import { useSettings } from '@/db/hooks'
+import { BadgeSync } from './BadgeSync'
 import { QuickAddSheet } from '@/features/quick-add/QuickAddSheet'
 import { KEYBOARD_PROXY_ID, useUIStore } from './store'
 import { toast } from './toast'
+
+const TAB_ROOTS = new Set(['/', '/tarjetas', '/movimientos', '/metas', '/estadisticas'])
 
 /** Contenedor de toda la app: pantalla activa + tab bar + botón "+" + hoja de carga rápida. */
 export function AppShell() {
   const quickAddOpen = useUIStore((s) => s.quickAddOpen)
   const openQuickAdd = useUIStore((s) => s.openQuickAdd)
   const closeQuickAdd = useUIStore((s) => s.closeQuickAdd)
+  const { pathname } = useLocation()
+  const settings = useSettings()
+  // El "+" vive en las pestañas principales; en formularios y detalles taparía sus botones.
+  const fabVisible = TAB_ROOTS.has(pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname)
 
   // Gastos fijos, suscripciones e ingresos recurrentes: se cargan solos al abrir la app y al volver a ella.
   useEffect(() => {
@@ -34,9 +42,10 @@ export function AppShell() {
       <Suspense fallback={null}>
         <Outlet />
       </Suspense>
-      <Fab onPress={openQuickAdd} />
+      <Fab onPress={openQuickAdd} visible={fabVisible} />
       <TabBar />
       <ToastHost />
+      {settings?.appBadge && <BadgeSync />}
       <QuickAddSheet open={quickAddOpen} onClose={closeQuickAdd} />
       {/* Input invisible: recibe el foco en el toque del "+" para que iOS abra el teclado numérico. */}
       <input

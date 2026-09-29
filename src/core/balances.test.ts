@@ -48,3 +48,27 @@ describe('accountBalances', () => {
     expect(totalsByCurrency(accounts, b)).toEqual({ ARS: 300, USD: 5 })
   })
 })
+
+describe('accountBalances con inversiones', () => {
+  it('invertir saca de la cuenta; rescatar devuelve capital + interés a la cuenta elegida', () => {
+    const b = accountBalances({
+      accounts: [{ id: 'bank', initialBalance: 200000 }, { id: 'mp', initialBalance: 0 }],
+      expenses: [], incomes: [], transfers: [], cardPayments: [],
+      investments: [
+        { accountId: 'bank', amount: 100000, date: '2026-09-01', closed: true, closedAt: '2026-10-01', closedAmount: 102466, closedAccountId: 'mp' },
+        { accountId: 'bank', amount: 50000, date: '2026-09-15', closed: false },
+        { amount: 999999, date: '2026-09-15', closed: false }, // solo registro, sin cuenta
+      ],
+    })
+    expect(b.get('bank')).toBe(50000)
+    expect(b.get('mp')).toBe(102466)
+  })
+  it('el rescate futuro todavía no suma', () => {
+    const b = accountBalances({
+      accounts: [{ id: 'bank', initialBalance: 200000 }],
+      expenses: [], incomes: [], transfers: [], cardPayments: [], asOf: '2026-09-20',
+      investments: [{ accountId: 'bank', amount: 100000, date: '2026-09-01', closed: true, closedAt: '2026-10-01', closedAmount: 102466, closedAccountId: 'bank' }],
+    })
+    expect(b.get('bank')).toBe(100000)
+  })
+})

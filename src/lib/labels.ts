@@ -1,5 +1,5 @@
 import type { Movement } from '@/core/movements'
-import type { AccountType, Frequency, PaymentMethod } from '@/core/types'
+import type { AccountType, Frequency, InvestmentType, PaymentMethod } from '@/core/types'
 
 export type AnyMethod = Movement['method']
 
@@ -11,6 +11,7 @@ export const METHOD_LABEL: Record<AnyMethod, string> = {
   card: 'Tarjeta',
   'transfer-internal': 'Entre cuentas',
   'card-payment': 'Pago de tarjeta',
+  saving: 'Ahorro e inversión',
 }
 
 /** Medios que se eligen al cargar un gasto sin tarjeta. */
@@ -50,4 +51,37 @@ export const CATEGORY_EMOJIS = [
 
 export const CATEGORY_COLORS = [
   '#34c759', '#30b0c7', '#007aff', '#5856d6', '#af52de', '#ff2d55', '#ff3b30', '#ff9500', '#ffcc00', '#a2845e', '#8e8e93', '#636366',
+]
+
+export const INVESTMENT_TYPE_LABEL: Record<InvestmentType, string> = {
+  plazo_fijo: 'Plazo fijo',
+  fci: 'FCI',
+  usd: 'Dólares',
+  ars: 'Pesos',
+  crypto: 'Cripto',
+  other: 'Otro',
+}
+
+export const INVESTMENT_TYPE_ICON: Record<InvestmentType, string> = {
+  plazo_fijo: '🏦',
+  fci: '📊',
+  usd: '💵',
+  ars: '💰',
+  crypto: '🪙',
+  other: '📈',
+}
+
+export const INVESTMENT_NAME_HINT: Record<InvestmentType, string> = {
+  plazo_fijo: 'Plazo fijo Galicia',
+  fci: 'FCI Money Market',
+  usd: 'Dólares ahorrados',
+  ars: 'Cuenta remunerada',
+  crypto: 'USDT',
+  other: 'Acciones',
+}
+
+/** Emojis sugeridos para metas. */
+export const GOAL_EMOJIS = [
+  '🏖️', '✈️', '🏔️', '🚗', '🏍️', '🏠', '🛋️', '💍', '🎓', '👶', '🐶', '💻', '📱', '🎮', '📷', '🎸',
+  '🚲', '⛺', '🎁', '🩺', '🆘', '💰', '🐷', '⭐',
 ]

@@ -75,3 +75,34 @@ describe('agrupado y totales', () => {
     expect(normalizeText('Cañón Árbol')).toBe('cañon arbol'.normalize('NFD').replace(/\p{M}/gu, ''))
   })
 })
+
+describe('aportes e inversiones en la lista', () => {
+  const withSavings = buildMovements(
+    {
+      ...src,
+      goalEntries: [
+        { id: 'g1', goalId: 'trip', amount: 2000000, date: '2026-09-22', accountId: 'bank', createdAt: '2026-09-22T10:00:00Z' },
+        { id: 'g2', goalId: 'trip', amount: -500000, date: '2026-09-23', accountId: 'mp', createdAt: '2026-09-23T10:00:00Z' },
+        { id: 'g3', goalId: 'trip', amount: 100, date: '2026-09-23', createdAt: '2026-09-23T11:00:00Z' }, // sin cuenta: no aparece
+      ],
+      investments: [
+        { id: 'pf', name: 'Plazo fijo', amount: 10000000, currency: 'ARS', date: '2026-09-01', accountId: 'bank', closed: true, closedAt: '2026-10-01', closedAmount: 10246575, closedAccountId: 'bank', createdAt: '2026-09-01T10:00:00Z' },
+        { id: 'fci', name: 'FCI', amount: 1, currency: 'ARS', date: '2026-09-01', closed: false, createdAt: '2026-09-01T10:00:00Z' }, // sin cuenta
+      ],
+    },
+    { ...names, goal: () => ({ name: 'Viaje', currency: 'ARS' }) },
+  )
+  const savings = withSavings.filter((m) => m.kind === 'saving')
+  it('solo lo que movió plata de una cuenta', () => {
+    expect(savings.map((m) => m.key)).toEqual(['saving:close:pf', 'saving:g2', 'saving:g1', 'saving:open:pf'])
+  })
+  it('títulos, montos positivos y referencia a la meta o inversión', () => {
+    const byKey = new Map(savings.map((m) => [m.key, m]))
+    expect(byKey.get('saving:g1')).toMatchObject({ title: 'Aporte a Viaje', detail: 'Galicia → meta', amount: 2000000, direction: 'neutral', saving: { type: 'goalEntry', parentId: 'trip' } })
+    expect(byKey.get('saving:g2')).toMatchObject({ title: 'Retiro de Viaje', amount: 500000 })
+    expect(byKey.get('saving:close:pf')).toMatchObject({ title: 'Rescate: Plazo fijo', amount: 10246575, saving: { type: 'investmentClose', parentId: 'pf' } })
+  })
+  it('no cuentan como gasto ni ingreso', () => {
+    expect(movementTotals(savings)).toEqual({ income: { ARS: 0, USD: 0 }, spent: { ARS: 0, USD: 0 } })
+  })
+})

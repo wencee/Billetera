@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { NBSP, formatDate, formatDateShort, formatDayHeader, formatMoney, formatPct, formatPeriod, formatPeriodLong } from './format'
+import { NBSP, formatDate, formatDateShort, formatDayHeader, formatMoney, formatMoneyCompact, formatPct, formatPeriod, formatPeriodLong } from './format'
 
 describe('formatDayHeader', () => {
   it('hoy, ayer, mañana y fechas largas', () => {
@@ -49,5 +49,15 @@ describe('fechas y períodos', () => {
   it('porcentaje', () => {
     expect(plain(formatPct(0.345))).toBe('34,5 %')
     expect(plain(formatPct(0.6, 0))).toBe('60 %')
+  })
+})
+
+describe('formatMoneyCompact', () => {
+  it('abrevia con sufijos en español', () => {
+    const plain = (s: string) => s.split(NBSP).join(' ')
+    expect(plain(formatMoneyCompact(123456700))).toBe('$ 1,2 M')
+    expect(plain(formatMoneyCompact(4500000))).toBe('$ 45 mil')
+    expect(plain(formatMoneyCompact(90000))).toBe('$ 900')
+    expect(plain(formatMoneyCompact(5000, 'USD'))).toBe('US$ 50')
   })
 })

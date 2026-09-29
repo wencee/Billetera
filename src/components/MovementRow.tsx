@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowLeftRight, CreditCard } from 'lucide-react'
+import { ArrowDownLeft, ArrowLeftRight, CreditCard, PiggyBank } from 'lucide-react'
 import { formatMoney } from '@/core/format'
 import type { Movement } from '@/core/movements'
 import type { Category } from '@/core/types'
@@ -19,8 +19,8 @@ function Icon({ movement, category }: Pick<Props, 'movement' | 'category'>) {
     )
   }
   const { kind } = movement
-  const Glyph = kind === 'income' ? ArrowDownLeft : kind === 'transfer' ? ArrowLeftRight : CreditCard
-  const tone = kind === 'income' ? 'bg-green/15 text-green' : kind === 'transfer' ? 'bg-tint/15 text-tint' : 'bg-fill text-label-2'
+  const Glyph = kind === 'income' ? ArrowDownLeft : kind === 'transfer' ? ArrowLeftRight : kind === 'saving' ? PiggyBank : CreditCard
+  const tone = kind === 'income' ? 'bg-green/15 text-green' : kind === 'transfer' ? 'bg-tint/15 text-tint' : kind === 'saving' ? 'bg-pink/15 text-pink' : 'bg-fill text-label-2'
   return (
     <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${tone}`} aria-hidden>
       <Glyph size={20} />

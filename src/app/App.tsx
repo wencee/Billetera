@@ -24,6 +24,10 @@ const ExpenseForm = named(() => import('@/features/movements/ExpenseForm'), 'Exp
 const IncomeForm = named(() => import('@/features/movements/IncomeForm'), 'IncomeForm')
 const TransferForm = named(() => import('@/features/movements/TransferForm'), 'TransferForm')
 const GoalsScreen = named(() => import('@/features/goals/GoalsScreen'), 'GoalsScreen')
+const GoalForm = named(() => import('@/features/goals/GoalForm'), 'GoalForm')
+const GoalDetail = named(() => import('@/features/goals/GoalDetail'), 'GoalDetail')
+const InvestmentForm = named(() => import('@/features/goals/InvestmentForm'), 'InvestmentForm')
+const InvestmentDetail = named(() => import('@/features/goals/InvestmentDetail'), 'InvestmentDetail')
 const StatsScreen = named(() => import('@/features/stats/StatsScreen'), 'StatsScreen')
 const SettingsScreen = named(() => import('@/features/settings/SettingsScreen'), 'SettingsScreen')
 const AccountsScreen = named(() => import('@/features/accounts/AccountsScreen'), 'AccountsScreen')
@@ -77,6 +81,12 @@ export function App() {
                 <Route path="movimientos/transferencia/:id" element={<TransferForm />} />
 
                 <Route path="metas" element={<GoalsScreen />} />
+                <Route path="metas/nueva" element={<GoalForm />} />
+                <Route path="metas/:id" element={<GoalDetail />} />
+                <Route path="metas/:id/editar" element={<GoalForm />} />
+                <Route path="metas/inversiones/nueva" element={<InvestmentForm />} />
+                <Route path="metas/inversiones/:id" element={<InvestmentDetail />} />
+                <Route path="metas/inversiones/:id/editar" element={<InvestmentForm />} />
                 <Route path="estadisticas" element={<StatsScreen />} />
 
                 <Route path="ajustes" element={<SettingsScreen />} />

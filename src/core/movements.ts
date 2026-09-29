@@ -5,7 +5,7 @@ import type { Cents, Currency, ISODate, PaymentMethod } from './types'
  * con tarjeta y pagos de resúmenes. Es una vista: cada ítem apunta a su fila
  * de origen por `kind` + `id`.
  */
-export type MovementKind = 'expense' | 'income' | 'transfer' | 'card' | 'cardPayment'
+export type MovementKind = 'expense' | 'income' | 'transfer' | 'card' | 'cardPayment' | 'saving'
 
 export interface Movement {
   key: string
@@ -24,11 +24,13 @@ export interface Movement {
   toCurrency?: Currency
   direction: 'out' | 'in' | 'neutral'
   categoryId?: string
-  method: PaymentMethod | 'transfer-internal' | 'card-payment'
+  method: PaymentMethod | 'transfer-internal' | 'card-payment' | 'saving'
   accountIds: string[]
   cardId?: string
   note?: string
   installments?: number
+  /** Para aportes a metas e inversiones: a qué meta o inversión pertenece. */
+  saving?: { type: 'goalEntry' | 'investmentOpen' | 'investmentClose'; parentId: string }
 }
 
 export interface MovementSources {
@@ -37,12 +39,16 @@ export interface MovementSources {
   transfers: readonly { id: string; fromAccountId: string; fromAmount: Cents; toAccountId: string; toAmount: Cents; date: ISODate; note?: string | undefined; createdAt: string }[]
   purchases: readonly { id: string; cardId: string; description: string; merchant?: string | undefined; categoryId: string; date: ISODate; currency: Currency; totalAmount: Cents; installments: number; notes?: string | undefined; createdAt: string }[]
   cardPayments: readonly { id: string; cardId: string; amount: Cents; accountId?: string | undefined; date: ISODate; createdAt: string }[]
+  /** Solo los que movieron plata de una cuenta aparecen en la lista. */
+  goalEntries?: readonly { id: string; goalId: string; amount: Cents; date: ISODate; accountId?: string | undefined; note?: string | undefined; createdAt: string }[]
+  investments?: readonly { id: string; name: string; amount: Cents; currency: Currency; date: ISODate; accountId?: string | undefined; closed: boolean; closedAt?: string | undefined; closedAmount?: Cents | undefined; closedAccountId?: string | undefined; createdAt: string }[]
 }
 
 export interface NameLookup {
   category: (id: string) => string | undefined
   account: (id: string) => { name: string; currency: Currency } | undefined
   card: (id: string) => string | undefined
+  goal?: (id: string) => { name: string; currency: Currency } | undefined
 }
 
 export function buildMovements(src: MovementSources, names: NameLookup): Movement[] {
@@ -95,6 +101,34 @@ export function buildMovements(src: MovementSources, names: NameLookup): Movemen
       title: `Pago ${card}`, detail: c.accountId ? accountName(c.accountId) : 'Resumen de tarjeta', amount: c.amount,
       currency: 'ARS', direction: 'out', method: 'card-payment', accountIds: c.accountId ? [c.accountId] : [], cardId: c.cardId,
     })
+  }
+  for (const g of src.goalEntries ?? []) {
+    if (!g.accountId) continue
+    const goal = names.goal?.(g.goalId)
+    const withdrawal = g.amount < 0
+    out.push({
+      key: `saving:${g.id}`, id: g.id, kind: 'saving', date: g.date, createdAt: g.createdAt,
+      title: `${withdrawal ? 'Retiro de' : 'Aporte a'} ${goal?.name ?? 'meta'}`,
+      detail: withdrawal ? `Meta → ${accountName(g.accountId)}` : `${accountName(g.accountId)} → meta`,
+      amount: Math.abs(g.amount), currency: goal?.currency ?? names.account(g.accountId)?.currency ?? 'ARS', direction: 'neutral',
+      method: 'saving', accountIds: [g.accountId], saving: { type: 'goalEntry', parentId: g.goalId }, ...(g.note ? { note: g.note } : {}),
+    })
+  }
+  for (const inv of src.investments ?? []) {
+    if (inv.accountId) {
+      out.push({
+        key: `saving:open:${inv.id}`, id: inv.id, kind: 'saving', date: inv.date, createdAt: inv.createdAt,
+        title: `Inversión: ${inv.name}`, detail: `${accountName(inv.accountId)} → inversión`, amount: inv.amount, currency: inv.currency,
+        direction: 'neutral', method: 'saving', accountIds: [inv.accountId], saving: { type: 'investmentOpen', parentId: inv.id },
+      })
+    }
+    if (inv.closed && inv.closedAt && inv.closedAmount !== undefined && inv.closedAccountId) {
+      out.push({
+        key: `saving:close:${inv.id}`, id: inv.id, kind: 'saving', date: inv.closedAt, createdAt: inv.closedAt,
+        title: `Rescate: ${inv.name}`, detail: `Inversión → ${accountName(inv.closedAccountId)}`, amount: inv.closedAmount, currency: inv.currency,
+        direction: 'neutral', method: 'saving', accountIds: [inv.closedAccountId], saving: { type: 'investmentClose', parentId: inv.id },
+      })
+    }
   }
   return out.sort((a, b) => (a.date !== b.date ? (a.date < b.date ? 1 : -1) : b.createdAt.localeCompare(a.createdAt)))
 }
