@@ -79,7 +79,7 @@ Cuando hay una versión nueva, la app muestra "Hay una versión nueva, tocá par
 ## Calidad
 
 - **215 tests unitarios** de la lógica financiera (cuotas, intereses con sistema francés, asignación a resúmenes con febrero y cierres corridos, proyecciones, presupuestos, metas, plazo fijo, backup, CSV, PIN…).
-- **15 tests de punta a punta** con Playwright: instalación, carga rápida, deslizar para borrar, búsqueda, compras en cuotas, metas, estadísticas, PIN, backup completo y funcionamiento sin conexión.
+- **16 tests de punta a punta** con Playwright: instalación, carga rápida, deslizar para editar o borrar, búsqueda, compras en cuotas, metas, estadísticas, PIN, backup completo y funcionamiento sin conexión.
 - **Lighthouse** (móvil): rendimiento 94, accesibilidad 100, buenas prácticas 100. El SEO da 63 a propósito: `robots.txt` le pide a los buscadores que no indexen una app personal (si la querés en Google, borrá `public/robots.txt`). Lighthouse 12 ya no tiene categoría "PWA"; la instalación y el modo sin conexión los verifican los tests de Playwright.
 
 ## Estructura

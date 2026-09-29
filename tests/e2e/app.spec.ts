@@ -48,12 +48,33 @@ test('deslizar un movimiento a la izquierda muestra Editar y Borrar', async ({ p
   await page.mouse.move(360, y)
   await page.mouse.down()
   for (let x = 360; x >= 200; x -= 20) await page.mouse.move(x, y)
+  // Pausa antes de soltar: sin velocidad la fila queda abierta. Un "flick" rápido
+  // borraría directo (como en Mail), y la velocidad del arrastre depende de la máquina.
+  await page.waitForTimeout(150)
   await page.mouse.up()
   const borrar = page.getByRole('button', { name: 'Borrar' }).filter({ visible: true })
   await expect(borrar).toHaveCount(1)
   await borrar.click()
   await expect(page.getByText('SUBE', { exact: true })).toHaveCount(0)
   await expect(page.getByRole('status').filter({ hasText: 'Movimiento borrado' })).toBeVisible()
+})
+
+test('deslizar hasta el final borra la fila, con deshacer', async ({ page }) => {
+  await openApp(page)
+  await loadSampleData(page)
+  await goToTab(page, 'Movimientos')
+  const row = page.getByText('SUBE', { exact: true })
+  const box = (await row.boundingBox())!
+  const y = box.y + box.height / 2
+  await page.mouse.move(380, y)
+  await page.mouse.down()
+  // Más allá del 60 % del ancho borra, sin importar la velocidad.
+  for (let x = 380; x >= 40; x -= 20) await page.mouse.move(x, y)
+  await page.waitForTimeout(150)
+  await page.mouse.up()
+  await expect(page.getByText('SUBE', { exact: true })).toHaveCount(0)
+  await page.getByRole('status').filter({ hasText: 'Movimiento borrado' }).getByRole('button', { name: 'Deshacer' }).click()
+  await expect(page.getByText('SUBE', { exact: true })).toBeVisible()
 })
 
 test('buscar en movimientos sin tildes y por monto', async ({ page }) => {
